@@ -9,9 +9,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
+from sse_starlette.sse import EventSourceResponse
 
 import fixtures
 from eval.scoring import headline
+from web.sse import sse_events
+from web.streams import resolve_eval_stream
 from web.templating import templates
 
 router = APIRouter()
@@ -67,4 +70,26 @@ async def run(request: Request) -> HTMLResponse:
         claims.append(_claim_from_output(q, output))
     return templates.TemplateResponse(
         "_claims.html", {"request": request, "claims": claims}
+    )
+
+
+@router.get("/fragment/improve-container/{claim_id}", response_class=HTMLResponse)
+async def improve_container(request: Request, claim_id: str) -> HTMLResponse:
+    """The htmx swap target that opens an SSE connection for this claim."""
+    return templates.TemplateResponse(
+        "_improve.html", {"request": request, "claim_id": claim_id}
+    )
+
+
+@router.get("/stream/improve/{claim_id}")
+async def stream_improve(claim_id: str) -> EventSourceResponse:
+    """Drive eval_stream (real or mock) and emit the §2 events as SSE.
+
+    The pill DOM id the events carry == claim_id, matching the dashboard's pills.
+    """
+    stream_fn = resolve_eval_stream()
+    return EventSourceResponse(
+        sse_events(claim_id, stream_fn),
+        ping=20,
+        headers={"X-Accel-Buffering": "no"},
     )

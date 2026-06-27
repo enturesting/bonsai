@@ -1,0 +1,9 @@
+<div class="improve" hx-ext="sse"
+     sse-connect="/stream/improve/{{ claim_id }}"
+     sse-close="done"
+     data-claim-id="{{ claim_id }}">
+  {% with check_id=claim_id, color="red", label="RED" %}{% include "_pill.html" %}{% endwith %}
+  {% include "_rule.html" %}
+  {# score event lands here as JSON; main.js formats it into the running score #}
+  <div id="score-raw" class="score-raw" sse-swap="score" hx-swap="innerHTML" hidden></div>
+</div>

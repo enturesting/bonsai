@@ -1,3 +1,146 @@
-/* Bonsai harness — styles are fleshed out across commits 3–5. */
-:root { color-scheme: light dark; }
-body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 0; }
+/* Bonsai — eval harness UI.
+   Centerpiece: the pill flips red→yellow→green live as eval_stream runs. */
+
+:root {
+  --bg: #0f1411;
+  --panel: #16201a;
+  --panel-2: #1d2a22;
+  --ink: #e7f0ea;
+  --muted: #8aa395;
+  --line: #294134;
+  --red: #e5484d;
+  --yellow: #f2c14e;
+  --green: #46c07a;
+  --accent: #5ad19a;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 70% -10%, #15241c 0%, var(--bg) 60%);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.45;
+}
+
+/* ---- top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar h1 { font-size: 1.15rem; margin: 0; font-weight: 700; letter-spacing: 0.2px; }
+.subtitle { color: var(--muted); font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem; }
+.subtitle strong { color: var(--accent); }
+
+/* ---- layout ---- */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.1rem;
+  padding: 1.1rem 1.4rem;
+  align-items: start;
+}
+.side { display: grid; gap: 1.1rem; position: sticky; top: 4rem; }
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+.panel h2 { font-size: 0.95rem; margin: 0 0 0.8rem; display: flex; align-items: baseline; gap: 0.5rem; }
+.hint { color: var(--muted); font-weight: 400; font-size: 0.74rem; }
+
+/* ---- buttons ---- */
+.btn {
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--ink);
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.05s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: translateY(1px); }
+.btn--run { background: var(--accent); color: #06210f; border-color: transparent; font-weight: 600; }
+.btn--improve { margin-top: 0.6rem; font-size: 0.85rem; }
+.htmx-indicator { color: var(--muted); font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; margin-left: 0.5rem; }
+.htmx-request .htmx-indicator, .htmx-indicator.htmx-request { opacity: 1; }
+
+/* ---- claims ---- */
+.claim {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 0.95rem;
+  margin-bottom: 0.8rem;
+  background: rgba(0, 0, 0, 0.15);
+}
+.claim-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.claim-cat {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+.claim-cat--clean { color: var(--green); border-color: rgba(70, 192, 122, 0.4); }
+.claim-q { color: var(--muted); font-size: 0.82rem; margin: 0.55rem 0 0.2rem; }
+.claim-text { margin: 0.1rem 0 0; font-weight: 500; }
+
+/* ---- the pill (the star) ---- */
+.pill {
+  display: inline-block;
+  min-width: 5.4rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  /* the flip: color + glow ease between states */
+  transition: background-color 0.45s ease, color 0.45s ease,
+              border-color 0.45s ease, box-shadow 0.45s ease;
+}
+.pill--red    { background: rgba(229, 72, 77, 0.16);  color: var(--red);    border-color: rgba(229, 72, 77, 0.5); }
+.pill--yellow { background: rgba(242, 193, 78, 0.16); color: var(--yellow); border-color: rgba(242, 193, 78, 0.55);
+                box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.08); animation: pulse 1s ease-in-out infinite; }
+.pill--green  { background: rgba(70, 192, 122, 0.18); color: var(--green);  border-color: rgba(70, 192, 122, 0.55);
+                box-shadow: 0 0 0 4px rgba(70, 192, 122, 0.1); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(242, 193, 78, 0.04); } }
+.stream-error { animation: none; }
+
+/* ---- improve fragment / rule stream (commit 4 fills behaviour) ---- */
+.improve { margin-top: 0.2rem; }
+.rule-box { margin-top: 0.6rem; }
+.rule-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.25rem; }
+.rule-stream {
+  display: block;
+  min-height: 1.4rem;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  color: var(--accent);
+  background: #0c130f;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.rule-stream span { animation: fadein 0.25s ease; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
