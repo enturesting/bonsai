@@ -9,12 +9,18 @@ from __future__ import annotations
 # The canonical first check (CONTRACTS §0): the seed the tree grows from.
 SEED_CHECK_ID = "numeric-cites-source"
 
-# SVG geometry (viewBox 0 0 240 200): branches climb the trunk, alternating sides.
+# SVG geometry (viewBox 0 0 240 200): branches climb the trunk, alternating
+# sides and curving upward like a real bonsai. Each branch is drawn as a
+# quadratic arc trunk→tip; `ctrl_*` is the bow. Small per-index jitter keeps the
+# silhouette organic without any randomness (deterministic → stable in tests).
 _TRUNK_X = 120
-_BASE_Y = 172
-_STEP = 22
-_LEN = 36
-_RISE = 14
+_BASE_Y = 174
+_STEP = 21
+_LEN = 38
+_RISE = 16
+# Deterministic "natural" variation, indexed by branch position.
+_LEN_JITTER = (0.0, 4.0, -3.0, 5.0, -2.0, 3.0, -4.0, 2.0)
+_RISE_JITTER = (0.0, 2.0, -1.0, 3.0, 1.0, -2.0, 2.0, -1.0)
 
 
 class Rubric:
@@ -38,9 +44,16 @@ class Rubric:
         out: list[dict] = []
         for i, (claim_id, status) in enumerate(rows):
             side = -1 if i % 2 == 0 else 1
+            j = i % len(_LEN_JITTER)
+            length = _LEN + _LEN_JITTER[j]
+            rise = _RISE + _RISE_JITTER[j]
             y = _BASE_Y - i * _STEP
-            x_tip = _TRUNK_X + side * _LEN
-            y_tip = y - _RISE
+            x_tip = _TRUNK_X + side * length
+            y_tip = y - rise
+            # Bow the branch: control point sits out along the limb and lower,
+            # so the arc lifts toward its leafy tip rather than running straight.
+            ctrl_x = _TRUNK_X + side * (length * 0.55)
+            ctrl_y = y + 3
             out.append(
                 {
                     "claim_id": claim_id,
@@ -50,8 +63,12 @@ class Rubric:
                     "y1": y,
                     "x2": x_tip,
                     "y2": y_tip,
+                    "ctrl_x": ctrl_x,
+                    "ctrl_y": ctrl_y,
+                    # foliage cluster anchored at the tip (template fans 3 leaves)
                     "leaf_cx": x_tip,
                     "leaf_cy": y_tip,
+                    "side": side,
                 }
             )
         return out

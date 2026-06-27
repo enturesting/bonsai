@@ -1,15 +1,37 @@
 <div id="tree" hx-get="/tree" hx-trigger="grow from:body" hx-swap="outerHTML">
   <svg class="bonsai" viewBox="0 0 240 200" role="img" aria-label="bonsai rubric tree">
-    <path class="trunk" d="M120 200 C 112 156 128 104 120 44" />
+    <defs>
+      <linearGradient id="barkGrad" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#5a3c22"/>
+        <stop offset="1" stop-color="#7d5733"/>
+      </linearGradient>
+      <radialGradient id="leafGrad" cx="0.35" cy="0.3" r="0.85">
+        <stop offset="0" stop-color="#3a9a63"/>
+        <stop offset="1" stop-color="#215137"/>
+      </radialGradient>
+    </defs>
+
+    <ellipse class="soil" cx="120" cy="190" rx="46" ry="7" />
+    <path class="trunk" d="M120 192 C 110 154 130 110 118 70 C 113 56 120 50 120 44" />
+
     {% for b in branches %}
-    <line class="branch branch--{{ b.status }}{{ ' branch--new' if b.new }}"
+    {# grown nodes (not the seed) open their Atlas cluster lineage on click #}
+    {% set clickable = b.status != "seed" %}
+    {% set s = b.side %}
+    <path class="branch branch--{{ b.status }}{{ ' branch--new' if b.new }}"
           data-claim="{{ b.claim_id }}"
-          x1="{{ b.x1 }}" y1="{{ b.y1 }}" x2="{{ b.x2 }}" y2="{{ b.y2 }}" />
-    <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new' if b.new }}"
+          d="M{{ b.x1 }} {{ b.y1 }} Q {{ b.ctrl_x }} {{ b.ctrl_y }} {{ b.x2 }} {{ b.y2 }}" />
+    {# foliage cluster: the primary leaf is the click target; two fan out for fullness #}
+    <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new leaf-a' if b.new }}{{ ' leaf--clickable' if clickable }}"
             data-claim="{{ b.claim_id }}"
-            cx="{{ b.leaf_cx }}" cy="{{ b.leaf_cy }}" r="5">
-      <title>{{ b.claim_id }}</title>
+            {% if clickable %}hx-get="/tree/{{ b.claim_id }}" hx-target="#lineage" hx-swap="innerHTML" role="button" tabindex="0"{% endif %}
+            cx="{{ b.leaf_cx }}" cy="{{ b.leaf_cy }}" r="5.5">
+      <title>{{ b.claim_id }}{{ ' — open cluster lineage' if clickable }}</title>
     </circle>
+    <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new leaf-b' if b.new }}"
+            cx="{{ b.leaf_cx + s * 6 }}" cy="{{ b.leaf_cy + 3 }}" r="3.6" />
+    <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new leaf-c' if b.new }}"
+            cx="{{ b.leaf_cx - s * 2 }}" cy="{{ b.leaf_cy - 6 }}" r="3.2" />
     {% endfor %}
   </svg>
   <p class="tree-caption">{{ branches|length }} check{{ '' if branches|length == 1 else 's' }} in the rubric</p>

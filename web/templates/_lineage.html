@@ -1,0 +1,49 @@
+{% set v = lineage.verdict %}
+<div class="lineage lineage--{{ lineage.source }}">
+  <div class="lineage-head">
+    <span class="lineage-title">Cluster lineage</span>
+    <span class="lineage-src">{{ "live Atlas" if lineage.source == "atlas" else "offline mock" }}</span>
+  </div>
+
+  {# 1 — the seed failure the grower started from #}
+  <div class="lin-node lin-seed">
+    <div class="lin-kind">seed failure</div>
+    <div class="lin-id">{{ lineage.seed.id }}</div>
+    {% if lineage.seed.claim %}<div class="lin-claim">{{ lineage.seed.claim }}</div>{% endif %}
+    <div class="lin-why">{{ lineage.seed.why }}</div>
+  </div>
+
+  <div class="lin-arrow">↓ nearest by <code>$vectorSearch</code></div>
+
+  {# 2 — the N nearest failures Atlas $vectorSearch returned, similarity order #}
+  <div class="lin-node lin-cluster">
+    <div class="lin-kind">cluster of {{ lineage.k }} — Atlas $vectorSearch</div>
+    <ol class="lin-list">
+      {% for c in lineage.cluster %}
+      <li class="lin-hit">
+        <span class="lin-rank">#{{ c.rank }}</span>
+        <span class="lin-hit-id">{{ c.id }}</span>
+        {% if c.similarity is not none %}<span class="lin-sim">{{ "%.2f"|format(c.similarity) }}</span>{% endif %}
+        <span class="lin-hit-why">{{ c.why }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+
+  <div class="lin-arrow">↓ minted + gated</div>
+
+  {# 3 — the minted general check + the is_general verdict #}
+  <div class="lin-node lin-minted lin-minted--{{ 'general' if v.is_general else 'overfit' }}">
+    <div class="lin-kind">minted from a cluster of {{ lineage.k }} failures (Atlas $vectorSearch)</div>
+    <div class="lin-id">{{ lineage.minted.id }}</div>
+    <div class="lin-prop">{{ lineage.minted.property }}</div>
+    <div class="lin-verdict">
+      {% if v.is_general %}
+        <span class="lin-pass">✓ is_general</span> — passed all known-good{% if v.n_known_good %} ({{ v.n_known_good }}){% endif %},
+        caught {{ v.caught_siblings }} sibling{{ '' if v.caught_siblings == 1 else 's' }}
+      {% else %}
+        <span class="lin-fail">✗ not general</span> — caught only {{ v.caught_siblings }} sibling{{ '' if v.caught_siblings == 1 else 's' }} (gate needs ≥2)
+      {% endif %}
+    </div>
+  </div>
+</div>

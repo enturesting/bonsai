@@ -29,3 +29,19 @@ def test_dashboard_includes_the_tree_with_grow_trigger(client):
     assert 'id="tree"' in body
     # htmx refreshes the tree when main.js fires `grow` on sse close.
     assert 'hx-trigger="grow from:body"' in body
+    # the lineage panel the clickable nodes open into.
+    assert 'id="lineage"' in body
+
+
+def test_grown_nodes_are_clickable_into_the_lineage(client):
+    # sprout a branch, then each grown node opens its cluster lineage.
+    client.get("/stream/improve/clean-numeric-01")
+    body = client.get("/tree").text
+    assert 'hx-get="/tree/clean-numeric-01"' in body
+    assert 'hx-target="#lineage"' in body
+
+
+def test_seed_node_is_not_clickable(client):
+    # the seed has no minting cluster behind it — only grown checks open a lineage.
+    body = client.get("/tree").text
+    assert 'hx-get="/tree/numeric-cites-source"' not in body

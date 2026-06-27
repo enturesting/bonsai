@@ -10,7 +10,14 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>🌳 Bonsai <span class="subtitle">self-improving eval <strong>harness</strong></span></h1>
+    <div class="brand">
+      <img class="brand-mark" src="/static/bonsai-logo.png" width="44" height="44"
+           alt="Bonsai — a bonsai forming a checkmark inside a gold enso circle">
+      <div class="brand-text">
+        <span class="wordmark">Bonsai</span>
+        <span class="tagline">self-improving eval harness</span>
+      </div>
+    </div>
     <form hx-post="/run" hx-target="#claims" hx-swap="innerHTML" hx-indicator="#run-spin">
       <button type="submit" class="btn btn--run">Run AUT over fixtures</button>
       <span id="run-spin" class="htmx-indicator">running…</span>

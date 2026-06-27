@@ -13,6 +13,7 @@ from sse_starlette.sse import EventSourceResponse
 
 import fixtures
 from eval.scoring import headline
+from web.lineage import resolve_cluster_lineage
 from web.sse import sse_events
 from web.state import RUBRIC
 from web.streams import resolve_eval_stream
@@ -124,4 +125,19 @@ async def tree(request: Request) -> HTMLResponse:
     """The bonsai viz: a branch per minted/evolved check (grow history)."""
     return templates.TemplateResponse(
         "_treesvg.html", {"request": request, "branches": RUBRIC.branches()}
+    )
+
+
+@router.get("/tree/{claim_id}", response_class=HTMLResponse)
+async def tree_lineage(request: Request, claim_id: str) -> HTMLResponse:
+    """The Atlas money-shot: how this check was minted from a failure cluster.
+
+    Renders seed failure → the nearest failures $vectorSearch returned → the
+    minted general check + is_general verdict. The data comes from the frozen
+    seams (store.nearest_failures / loop.grow) or, offline, the scripted mock —
+    /web owns no clustering/minting itself.
+    """
+    lineage = await resolve_cluster_lineage()(claim_id)
+    return templates.TemplateResponse(
+        "_lineage.html", {"request": request, "lineage": lineage}
     )
