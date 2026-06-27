@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # ── Gemini AUT ─────────────────────────────────────────────────────
     gemini_api_key: str = Field("", env="GEMINI_API_KEY")
+    gemini_model: str = Field("gemini-3.5-pro", env="GEMINI_MODEL")  # AUT model id
     mock_aut: bool = Field(True, env="MOCK_AUT")  # 1 = deterministic offline AUT (no Gemini call)
 
     class Config:
