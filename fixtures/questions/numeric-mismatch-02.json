@@ -1,6 +1,6 @@
 {
   "id": "numeric-mismatch-02",
-  "category": "numeric-mismatch",
+  "category": "unsupported-numeric",
   "question": "In what year did the Berlin Wall fall?",
   "sources": [
     {

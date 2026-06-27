@@ -15,14 +15,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-# The five citation-grounding failure classes this harness catches. Every failure
-# fixture is tagged with exactly one of these; "clean" fixtures must pass.
+# The five citation-grounding failure classes this harness catches — named to match
+# the gold set's `category_relevant`. Every failure fixture is tagged with exactly one
+# of these; "clean" fixtures must pass.
 FAILURE_CATEGORIES = (
-    "numeric-mismatch",   # a number/date in the claim is absent from the cited source
-    "no-quote",           # the claim has no supporting span anywhere in the cited source
-    "wrong-source",       # support exists in a candidate source, but a different one was cited
-    "overstated",         # the cited source supports only a hedged/narrower version
-    "contradicted",       # the cited source states the opposite of the claim
+    "unsupported-numeric",     # a number/stat in the claim has no verbatim supporting quote in the cited source
+    "fabricated-quote",        # an attributed claim is not byte-recoverable from the cited source
+    "stale-wrong-citation",    # a real source is cited, but it is the wrong one and does not support the claim
+    "vague-not-checkable",     # the cited source supports only a hedged/narrower version of a stronger claim
+    "single-source-overcite",  # one source is cited to carry many distinct claims it does not all support
 )
 
 QUESTIONS_DIR = Path(__file__).resolve().parent / "questions"

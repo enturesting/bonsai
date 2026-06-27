@@ -33,7 +33,7 @@ def test_run_agent_returns_autoutput():
 
 def test_mock_is_deterministic():
     from fixtures.aut import run_agent
-    fx = _by_id("contradicted-01")
+    fx = _by_id("overcited-01")
     a, b = run_agent(fx), run_agent(fx)
     assert a.model_dump() == b.model_dump()
 

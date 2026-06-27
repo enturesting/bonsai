@@ -1,6 +1,6 @@
 {
   "id": "numeric-mismatch-01",
-  "category": "numeric-mismatch",
+  "category": "unsupported-numeric",
   "question": "Approximately how many base pairs are in the human genome?",
   "sources": [
     {
