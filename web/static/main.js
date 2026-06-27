@@ -58,9 +58,14 @@ if (typeof document !== "undefined") {
     if (rule) rule.scrollTop = rule.scrollHeight;
   });
 
-  // 3. when an improve stream closes, sprout a branch on the bonsai tree.
-  document.body.addEventListener("htmx:sseClose", function () {
-    document.body.dispatchEvent(new Event("grow"));
+  // 3. when an improve stream closes via the `done` event, sprout a branch.
+  // htmx:sseClose also fires on nodeReplaced/nodeMissing (e.g. reopening a
+  // panel); only type:'message' is the real done-driven close, so gate on it to
+  // avoid a spurious /tree refresh + replayed sprout for an unminted check.
+  document.body.addEventListener("htmx:sseClose", function (evt) {
+    if (evt.detail && evt.detail.type === "message") {
+      document.body.dispatchEvent(new Event("grow"));
+    }
   });
 }
 

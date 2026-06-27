@@ -67,8 +67,11 @@ async def _boom_stream(claim_id):
     raise RuntimeError("loop blew up")
 
 
-async def test_sse_events_emits_error_event_on_exception():
+async def test_sse_events_emits_error_then_done_on_exception():
     events = [ev async for ev in sse.sse_events("c1", _boom_stream)]
     assert events[0].event == "pill"
-    assert events[-1].event == "error"
-    assert "loop blew up" in events[-1].data
+    # error must be followed by done — sse-close="done" is the only terminator,
+    # otherwise the browser EventSource auto-reconnects and the spinner hangs.
+    assert [e.event for e in events[-2:]] == ["error", "done"]
+    assert "loop blew up" in events[-2].data
+    assert events[-1].data == ""

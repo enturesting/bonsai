@@ -44,6 +44,21 @@ async def test_failure_claim_stays_red(fake_questions):
     assert score["data"]["passed"] is False
 
 
+async def test_error_path_emits_error_then_done(monkeypatch):
+    # If anything blows up, the mock must still close via `done` so the
+    # EventSource stops instead of auto-reconnecting.
+    import fixtures
+
+    def boom():
+        raise RuntimeError("fixtures exploded")
+
+    monkeypatch.setattr(fixtures, "load_fixture_questions", boom)
+    events = await _collect("numeric-mismatch-01")
+    names = [d["event"] for d in events]
+    assert names[-2:] == ["error", "done"]
+    assert "fixtures exploded" in events[-2]["data"]["message"]
+
+
 async def test_score_shape_counts_and_wilson_ci(fake_questions):
     events = await _collect("clean-numeric-01")
     data = [d for d in events if d["event"] == "score"][0]["data"]
