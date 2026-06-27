@@ -144,3 +144,15 @@ body {
 }
 .rule-stream span { animation: fadein 0.25s ease; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- running score (counts + Wilson CI) ---- */
+.score-display { font-variant-numeric: tabular-nums; }
+.score-counts { display: flex; align-items: baseline; gap: 0.4rem; font-size: 1.5rem; font-weight: 700; }
+.score-before { color: var(--muted); }
+.score-arrow { color: var(--muted); font-size: 1rem; }
+.score-after { color: var(--ink); transition: color 0.3s; }
+.score-after.up { color: var(--green); }
+.score-of { font-size: 0.8rem; font-weight: 400; color: var(--muted); }
+.score-ci { margin-top: 0.3rem; font-size: 0.8rem; color: var(--muted); }
+.score-bump { animation: bump 0.4s ease; }
+@keyframes bump { 30% { transform: scale(1.06); } }

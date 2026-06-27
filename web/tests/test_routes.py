@@ -17,6 +17,13 @@ def test_dashboard_lists_each_claim_with_a_red_pill(client):
     assert "3.2 billion" in body
 
 
+def test_dashboard_score_panel_shows_counts_and_wilson_ci(client):
+    body = client.get("/").text
+    # honest baseline: 0 green of N, with a CI — never a bare %.
+    assert f"/ {len(FAKE_QUESTIONS)} green" in body
+    assert "95% CI [" in body
+
+
 def test_run_mints_pill_skeleton_keyed_by_fixture_id(client):
     r = client.post("/run")
     assert r.status_code == 200
