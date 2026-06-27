@@ -1,0 +1,10 @@
+<section class="panel tree-panel">
+  <h2>Bonsai <span class="hint">rubric grows a branch per minted check</span></h2>
+  <div id="tree" hx-get="/tree" hx-trigger="grow from:body" hx-swap="outerHTML">
+    <svg class="bonsai" viewBox="0 0 240 200" role="img" aria-label="bonsai rubric tree">
+      <path class="trunk" d="M120 200 C 116 150 124 120 120 90" />
+      <circle class="seed" cx="120" cy="90" r="4" />
+    </svg>
+    <p class="tree-empty">Seed planted — improve a claim to sprout a branch.</p>
+  </div>
+</section>
