@@ -14,6 +14,7 @@ from .checker import (
     opus_check,
     run_check,
 )
+from .skeptic import skeptic
 
 __all__ = [
     "HAIKU",
@@ -23,4 +24,5 @@ __all__ = [
     "haiku_check",
     "opus_check",
     "run_check",
+    "skeptic",
 ]
