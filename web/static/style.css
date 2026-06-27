@@ -243,15 +243,25 @@ body {
 /* ---- AUT credit: the Gemini badge + the citations it grounded on --------- */
 .claim-by { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0; }
 .badge--gemini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
   font-family: var(--font-body);
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.3px;
-  color: #2a3f86;
-  background: linear-gradient(90deg, #e8edff 0%, #efe9ff 100%);
-  border: 1px solid #c3cdf2;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
-  padding: 0.16rem 0.6rem;
+  padding: 0.16rem 0.6rem 0.16rem 0.5rem;
+}
+.badge--gemini::before {
+  content: "";
+  width: 0.42em; height: 0.42em;
+  border-radius: 999px;
+  background: var(--gold-bright);
+  flex: none;
 }
 .cite {
   font-family: var(--font-mono);
