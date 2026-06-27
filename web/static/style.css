@@ -102,6 +102,27 @@ body {
 .claim-q { color: var(--muted); font-size: 0.82rem; margin: 0.55rem 0 0.2rem; }
 .claim-text { margin: 0.1rem 0 0; font-weight: 500; }
 
+/* ---- AUT credit: the Gemini badge + the citations it grounded on ---- */
+.claim-by { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 0; }
+.badge--gemini {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #cbd9ff;
+  background: linear-gradient(90deg, rgba(110, 140, 255, 0.18), rgba(160, 120, 255, 0.18));
+  border: 1px solid rgba(140, 150, 255, 0.45);
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+}
+.cite {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.04rem 0.3rem;
+}
+
 /* ---- the pill (the star) ---- */
 .pill {
   display: inline-block;

@@ -29,6 +29,8 @@ def _claim_from_fixture(q: dict) -> dict:
         "question": q.get("question", ""),
         "claim": mock.get("claim", ""),
         "category": q.get("category", ""),
+        # the source handles the Gemini AUT cited (offline: the fixture's mock script).
+        "citations": list(mock.get("cite_ids", [])),
     }
 
 
@@ -39,6 +41,8 @@ def _claim_from_output(q: dict, output) -> dict:
         "question": q.get("question", ""),
         "claim": output.claim,
         "category": q.get("category", ""),
+        # the source handles the Gemini AUT actually grounded this answer on.
+        "citations": [s.id for s in output.sources],
     }
 
 

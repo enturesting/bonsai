@@ -8,6 +8,10 @@
   </div>
   <p class="claim-q">{{ c.question }}</p>
   <p class="claim-text">{{ c.claim }}</p>
+  <p class="claim-by">
+    <span class="badge badge--gemini">Answered by Gemini 3.5</span>
+    {% for s in c.citations %}<span class="cite">[{{ s }}]</span>{% endfor %}
+  </p>
   <button class="btn btn--improve"
           hx-get="/fragment/improve-container/{{ c.id }}"
           hx-target="#improve-{{ c.id }}"
