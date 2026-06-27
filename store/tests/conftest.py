@@ -14,12 +14,20 @@ from config import get_settings
 
 
 @pytest.fixture(autouse=True)
-def _isolate_settings(monkeypatch):
+def _isolate_settings(monkeypatch, request):
     """Give every test a clean, fully-populated (but fake) settings object.
 
     config.get_settings() is lru_cached, so we clear it and feed dummy creds via
     the environment. Real values are never needed for the mocked unit tests.
+
+    Tests marked `atlas_it` are skipped here: they need the *real* environment
+    (live MONGODB_URI + VOYAGE_API_KEY), so we leave os.environ untouched.
     """
+    if request.node.get_closest_marker("atlas_it"):
+        get_settings.cache_clear()
+        yield
+        get_settings.cache_clear()
+        return
     monkeypatch.setenv("MONGODB_URI", "mongodb://localhost:27017")
     monkeypatch.setenv("ATLAS_DB", "bonsai_test")
     monkeypatch.setenv("ATLAS_COLLECTION", "failures")
@@ -41,9 +49,7 @@ def mock_db():
     return client["bonsai_test"]
 
 
-def atlas_it():
-    """Skip marker for the one real-Atlas integration test."""
-    return pytest.mark.skipif(
-        os.getenv("RUN_ATLAS_IT") != "1",
-        reason="set RUN_ATLAS_IT=1 (and real MONGODB_URI/VOYAGE_API_KEY) to run Atlas integration test",
-    )
+requires_atlas = pytest.mark.skipif(
+    os.getenv("RUN_ATLAS_IT") != "1",
+    reason="set RUN_ATLAS_IT=1 (with real MONGODB_URI + VOYAGE_API_KEY) to run the Atlas integration test",
+)

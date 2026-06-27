@@ -1,10 +1,15 @@
 """TDD for store.embed — the Voyage seam (voyage-3, 1024-dim, asymmetric)."""
 from __future__ import annotations
 
+import importlib
+
 import pytest
 
-import store.embed as embed_mod
 from store.models import EMBED_DIM
+
+# `store/__init__` re-exports the `embed` function, which shadows the `store.embed`
+# package attribute. Grab the real module from sys.modules to monkeypatch it.
+embed_mod = importlib.import_module("store.embed")
 
 
 class StubVoyage:
