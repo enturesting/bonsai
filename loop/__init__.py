@@ -15,12 +15,15 @@ from .checker import (
     run_check,
 )
 from .grower import grow, is_general, mint_check, mint_check_from_miss
+from .pruner import PRUNE_HI, PRUNE_LO, prune
 from .skeptic import skeptic
 
 __all__ = [
     "HAIKU",
     "OPUS",
     "CONF_FLOOR",
+    "PRUNE_HI",
+    "PRUNE_LO",
     "deterministic",
     "haiku_check",
     "opus_check",
@@ -30,4 +33,5 @@ __all__ = [
     "mint_check_from_miss",
     "is_general",
     "grow",
+    "prune",
 ]
