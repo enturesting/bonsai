@@ -1,0 +1,44 @@
+# DigitalOcean App Platform spec for the Bonsai eval harness.
+# Deploy with:  doctl apps create --spec deploy/app.yaml
+# Secrets are set AFTER create (see deploy/DEPLOY.md) — never commit real values.
+name: bonsai
+region: nyc
+services:
+  - name: web
+    # Build from the Dockerfile in this repo (deploy/Dockerfile).
+    dockerfile_path: deploy/Dockerfile
+    source_dir: /
+    github:
+      repo: REPLACE_WITH/owner-repo   # e.g. nic/bonsai — or use `doctl apps create` from a local push
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 8080
+    run_command: uvicorn main:app --host 0.0.0.0 --port 8080 --timeout-keep-alive 75
+    health_check:
+      http_path: /healthz
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      # --- Secrets: values injected at/after create, never stored in git ---
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        type: SECRET
+      - key: ANTHROPIC_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: VOYAGE_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      # --- Deterministic no-API AUT path (fixtures.run_agent). "1" to enable. ---
+      - key: MOCK_AUT
+        scope: RUN_TIME
+        type: GENERAL
+        value: "0"
