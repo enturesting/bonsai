@@ -1,0 +1,26 @@
+{
+  "id": "wrong-source-01",
+  "category": "wrong-source",
+  "question": "Which gas is the most abundant in Earth's atmosphere?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "The Ozone Layer",
+      "url": "https://example.org/ozone",
+      "text": "The ozone layer in the stratosphere absorbs most of the Sun's harmful ultraviolet radiation, protecting life on the surface."
+    },
+    {
+      "id": "S2",
+      "title": "Composition of Air",
+      "url": "https://example.org/air-composition",
+      "text": "Nitrogen is the most abundant gas in Earth's atmosphere, making up the largest share of the air by volume."
+    }
+  ],
+  "mock": {
+    "claim": "Nitrogen is the most abundant gas in Earth's atmosphere.",
+    "output": "Nitrogen is the most abundant gas in Earth's atmosphere [S1].",
+    "cite_ids": ["S1"]
+  },
+  "expected": "The claim is true and supported by S2 (Composition of Air); the citation should point to S2, not S1.",
+  "why": "The cited source S1 is about the ozone layer and never mentions nitrogen; the supporting passage is the uncited S2."
+}

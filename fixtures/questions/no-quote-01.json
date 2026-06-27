@@ -1,0 +1,20 @@
+{
+  "id": "no-quote-01",
+  "category": "no-quote",
+  "question": "What did the Apollo 11 astronauts do on the lunar surface in 1969?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Apollo 11 — Mission Summary",
+      "url": "https://example.org/apollo11",
+      "text": "Apollo 11 launched on July 16, 1969, carrying astronauts Neil Armstrong, Buzz Aldrin, and Michael Collins. Armstrong and Aldrin landed the lunar module in the Sea of Tranquility while Collins remained in orbit."
+    }
+  ],
+  "mock": {
+    "claim": "Apollo 11 astronauts conducted the first deep-drilling core sampling of the lunar mantle.",
+    "output": "On the lunar surface, the Apollo 11 astronauts conducted the first deep-drilling core sampling of the lunar mantle [S1].",
+    "cite_ids": ["S1"]
+  },
+  "expected": "Any claim about coring or sampling must be backed by a passage that mentions it; the cited source only describes the launch and landing.",
+  "why": "Claim asserts a specific activity (deep-drilling mantle core sampling) that has no supporting span anywhere in the cited source."
+}

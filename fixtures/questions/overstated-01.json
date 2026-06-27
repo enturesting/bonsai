@@ -1,0 +1,20 @@
+{
+  "id": "overstated-01",
+  "category": "overstated",
+  "question": "Does drinking green tea prevent cancer?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Green Tea and Cancer Risk — Review",
+      "url": "https://example.org/green-tea",
+      "text": "Preliminary observational studies suggest that green tea consumption may be associated with a modestly lower risk of certain cancers, but the evidence remains inconclusive."
+    }
+  ],
+  "mock": {
+    "claim": "Drinking green tea prevents cancer.",
+    "output": "Drinking green tea prevents cancer [S1].",
+    "cite_ids": ["S1"]
+  },
+  "expected": "A supported answer would hedge to match the source: green tea may be associated with a modestly lower risk of certain cancers, but evidence is inconclusive.",
+  "why": "Claim asserts a definitive causal effect ('prevents cancer') where the cited source offers only a hedged, inconclusive association ('may be associated with a modestly lower risk')."
+}

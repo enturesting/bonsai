@@ -1,0 +1,20 @@
+{
+  "id": "numeric-mismatch-02",
+  "category": "numeric-mismatch",
+  "question": "In what year did the Berlin Wall fall?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "The Fall of the Berlin Wall",
+      "url": "https://example.org/berlin-wall",
+      "text": "The Berlin Wall, which had divided the city since 1961, was opened on the night of 9 November 1989, leading to its dismantling in the following months."
+    }
+  ],
+  "mock": {
+    "claim": "The Berlin Wall fell in 1991.",
+    "output": "The Berlin Wall fell in 1991, reuniting the divided city [S1].",
+    "cite_ids": ["S1"]
+  },
+  "expected": "The wall was opened on 9 November 1989, the date given in the cited source.",
+  "why": "The year in the claim (1991) does not appear in the cited source, which gives 1989."
+}

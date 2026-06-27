@@ -1,0 +1,24 @@
+{
+  "id": "clean-multi-01",
+  "category": "clean",
+  "question": "What causes tides on Earth?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Tides — The Moon's Role",
+      "url": "https://example.org/tides-moon",
+      "text": "Tides are primarily caused by the gravitational pull of the Moon on Earth's oceans."
+    },
+    {
+      "id": "S2",
+      "title": "Tides — The Sun's Contribution",
+      "url": "https://example.org/tides-sun",
+      "text": "The Sun also exerts a gravitational influence on the tides, though its effect is roughly half that of the Moon."
+    }
+  ],
+  "mock": {
+    "claim": "Tides are primarily caused by the gravitational pull of the Moon, with a smaller contribution from the Sun.",
+    "output": "Tides are primarily caused by the gravitational pull of the Moon on Earth's oceans [S1], and the Sun also exerts a gravitational influence on the tides, with a smaller effect [S2].",
+    "cite_ids": ["S1", "S2"]
+  }
+}

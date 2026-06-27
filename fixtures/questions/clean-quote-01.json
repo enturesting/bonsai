@@ -1,0 +1,18 @@
+{
+  "id": "clean-quote-01",
+  "category": "clean",
+  "question": "What is the primary function of mitochondria?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Cell Biology — Organelles",
+      "url": "https://example.org/mitochondria",
+      "text": "Mitochondria are membrane-bound organelles that generate most of the cell's supply of adenosine triphosphate (ATP), used as a source of chemical energy."
+    }
+  ],
+  "mock": {
+    "claim": "Mitochondria generate most of the cell's supply of ATP.",
+    "output": "Mitochondria are membrane-bound organelles that generate most of the cell's supply of ATP, the main chemical energy currency of the cell [S1].",
+    "cite_ids": ["S1"]
+  }
+}

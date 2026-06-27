@@ -1,0 +1,20 @@
+{
+  "id": "numeric-mismatch-01",
+  "category": "numeric-mismatch",
+  "question": "Approximately how many base pairs are in the human genome?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Human Genome — Size",
+      "url": "https://example.org/genome",
+      "text": "The human genome consists of approximately 3.1 billion base pairs of DNA distributed across 23 chromosome pairs."
+    }
+  ],
+  "mock": {
+    "claim": "The human genome consists of approximately 3.2 billion base pairs.",
+    "output": "The human genome consists of approximately 3.2 billion base pairs distributed across 23 chromosome pairs [S1].",
+    "cite_ids": ["S1"]
+  },
+  "expected": "The genome contains approximately 3.1 billion base pairs, matching the figure in the cited source.",
+  "why": "Numeric claim (3.2 billion) has no matching figure in the cited source, which states 3.1 billion."
+}
