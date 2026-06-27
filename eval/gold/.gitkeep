@@ -1,0 +1,3 @@
+# Frozen, human-authored gold set lives here as one g-XX.json per item.
+# AUTHORED ON-SITE (Sat 11:30+), one incremental commit each. frozen:true, never edited in place.
+# /loop must NEVER read this directory (see eval/tests/test_honesty_gate.py).
