@@ -48,3 +48,26 @@ def checks_collection(db) -> "AsyncIOMotorCollection":
 def known_good_collection(db) -> "AsyncIOMotorCollection":
     """Held-back known-good AUTOutputs used by is_general / known_good_sample."""
     return db["known_good"]
+
+
+# ── Mongo `_id` == model `id` translation (CONTRACTS §1) ─────────────────────
+def to_doc(model) -> dict:
+    """Pydantic model with an `id` field → Mongo doc with `_id` set from `id`."""
+    d = model.model_dump()
+    d["_id"] = d.pop("id")
+    return d
+
+
+def from_doc(doc: dict) -> dict:
+    """Mongo doc → kwargs for an id-bearing model (`_id` → `id`)."""
+    d = dict(doc)
+    if "_id" in d:
+        d["id"] = d.pop("_id")
+    return d
+
+
+def drop_id(doc: dict) -> dict:
+    """Mongo doc → kwargs for an id-less model (AUTOutput): drop `_id` entirely."""
+    d = dict(doc)
+    d.pop("_id", None)
+    return d
