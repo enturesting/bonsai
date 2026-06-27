@@ -96,22 +96,20 @@ async def test_rewrite_rule_stream_yields_opus_tokens_with_adaptive_effort(patch
 
 # ── eval_stream lifecycle ────────────────────────────────────────────────────
 def _install_eval_stream(monkeypatch, *, passed, pool_green=3, n=4, tokens=("IF ", "numeric")):
+    # the target claim drives the pill; "ok" claims pass run_check
+    target = out("ok target" if passed else "bad target")
     pool = [out("ok %d" % i) for i in range(pool_green)] + [out("bad %d" % i) for i in range(n - pool_green)]
 
     async def ctx(cid):
-        return pool[0], a_check("ORIGINAL"), pool
+        return target, a_check("ORIGINAL"), pool
 
-    async def rrs(cid):
+    async def rtoks(output, check):
         for t in tokens:
             yield t
 
-    async def rchk(cid, rule):
-        return passed
-
     monkeypatch.setattr(engine, "_context", ctx)
-    monkeypatch.setattr(engine, "rewrite_rule_stream", rrs)
-    monkeypatch.setattr(engine, "run_checker", rchk)
-    # _green_count uses run_check over the pool; "ok" claims pass
+    monkeypatch.setattr(engine, "_rewrite_tokens", rtoks)
+    # pill verdict (target) and before/after counts (pool) both flow through run_check
     monkeypatch.setattr(engine, "run_check",
                         lambda check, claim, output: Verdict(passed=("ok" in claim), confidence=1.0, reason=""))
     return pool
@@ -129,6 +127,33 @@ async def test_eval_stream_emits_full_lifecycle_in_order(monkeypatch):
     assert last_pill["data"]["color"] == "green" and last_pill["data"]["label"] == "GREEN"
     assert last_pill["data"]["check_id"] == "claim-1"
     assert done["data"] == {}
+
+
+async def test_eval_stream_resolves_context_exactly_once(monkeypatch):
+    # The pill (passed) and the before/after counts must derive from ONE AUT
+    # generation, or with a non-deterministic AUT the green pill can disagree with
+    # the after-count it's meant to back. One resolution also avoids 3x(N+1) Gemini
+    # calls blocking the SSE event loop.
+    from loop import llm
+
+    calls = {"n": 0}
+    target, pool = out("ok target"), [out("ok a"), out("bad b")]
+
+    async def ctx(cid):
+        calls["n"] += 1
+        return target, a_check("ORIGINAL"), pool
+
+    monkeypatch.setattr(engine, "_context", ctx)
+    monkeypatch.setattr(engine, "run_check",
+                        lambda check, claim, output: Verdict(passed=("ok" in claim), confidence=1.0, reason=""))
+    monkeypatch.setattr(llm, "opus_stream_text", lambda **kw: iter(["IF ", "numeric"]))
+
+    events = await collect(eval_stream("c1"))
+    assert calls["n"] == 1, f"_context resolved {calls['n']}x (must be 1)"
+    # pill verdict and the after-count come from the same resolved generation
+    last_pill = [e for e in events if e["event"] == "pill"][-1]
+    score = next(e for e in events if e["event"] == "score")["data"]
+    assert last_pill["data"]["color"] == "green" and score["passed"] is True
 
 
 async def test_eval_stream_score_shape_counts_and_wilson(monkeypatch):
@@ -168,14 +193,14 @@ async def test_eval_stream_propagates_client_cancellation(monkeypatch):
     async def ctx(cid):
         return pool[0], a_check(), pool
 
-    async def cancel_stream(cid):
+    async def cancel_stream(output, check):
         raise asyncio.CancelledError
         yield  # pragma: no cover  (makes this an async generator)
 
     monkeypatch.setattr(engine, "_context", ctx)
     monkeypatch.setattr(engine, "run_check",
                         lambda *a: Verdict(passed=True, confidence=1.0, reason=""))
-    monkeypatch.setattr(engine, "rewrite_rule_stream", cancel_stream)
+    monkeypatch.setattr(engine, "_rewrite_tokens", cancel_stream)
     with pytest.raises(asyncio.CancelledError):
         async for _ in eval_stream("c1"):
             pass

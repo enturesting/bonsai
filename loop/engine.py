@@ -89,9 +89,9 @@ def _green_count(check: Check, pool: list[AUTOutput]) -> int:
 
 
 # ── frozen public surface ────────────────────────────────────────────────────
-async def rewrite_rule_stream(claim_id: str):
-    """Stream the Opus rule-rewrite token-by-token (adaptive thinking + effort)."""
-    output, check, _ = await _context(claim_id)
+async def _rewrite_tokens(output: AUTOutput, check: Check):
+    """Stream the Opus rule-rewrite over an ALREADY-resolved (output, check), so
+    eval_stream can drive the rewrite without re-resolving the AUT context."""
     user = (
         f"CURRENT CHECK PROPERTY:\n{check.property}\n\n"
         f"A claim that slipped through:\nCLAIM: {output.claim}\n"
@@ -103,11 +103,17 @@ async def rewrite_rule_stream(claim_id: str):
         await asyncio.sleep(0)  # yield control to the event loop between tokens
 
 
+async def rewrite_rule_stream(claim_id: str):
+    """Stream the Opus rule-rewrite token-by-token (adaptive thinking + effort)."""
+    output, check, _ = await _context(claim_id)
+    async for token in _rewrite_tokens(output, check):
+        yield token
+
+
 async def run_checker(claim_id: str, rule_text: str) -> bool:
     """Re-run the checker on this claim with the rewritten rule applied."""
     output, check, _ = await _context(claim_id)
-    new_check = _apply_rule(check, rule_text)
-    return run_check(new_check, output.claim, output).passed
+    return run_check(_apply_rule(check, rule_text), output.claim, output).passed
 
 
 def _pill(check_id: str, color: str, label: str) -> dict:
@@ -115,25 +121,32 @@ def _pill(check_id: str, color: str, label: str) -> dict:
 
 
 async def eval_stream(claim_id: str):
-    """The single generator /web iterates. Emits the §2 lifecycle of semantic dicts."""
+    """The single generator /web iterates. Emits the §2 lifecycle of semantic dicts.
+
+    Resolves the AUT context ONCE and reuses (output, check, pool) for the before
+    count, the rule rewrite, the re-check, and the after count — so the green/red
+    pill and the score's after-count derive from the same generation (coherent
+    honesty numbers) and one click costs one pool pass, not three.
+    """
     try:
         output, check, pool = await _context(claim_id)
 
         yield _pill(claim_id, "yellow", "CHECKING…")
         await asyncio.sleep(0)  # flush the yellow pill immediately
 
-        before = _green_count(check, pool)
         n = len(pool)
+        before = _green_count(check, pool)
 
         rule_text = ""
-        async for token in rewrite_rule_stream(claim_id):
+        async for token in _rewrite_tokens(output, check):
             rule_text += token
             yield {"event": "chunk", "data": {"token": token}}
 
-        passed = await run_checker(claim_id, rule_text)
+        new_check = _apply_rule(check, rule_text)
+        passed = run_check(new_check, output.claim, output).passed
         yield _pill(claim_id, "green" if passed else "red", "GREEN" if passed else "RED")
 
-        after = _green_count(_apply_rule(check, rule_text), pool)
+        after = _green_count(new_check, pool)
         lo, hi = _wilson(after, n)
         yield {
             "event": "score",
