@@ -30,3 +30,4 @@ pydantic-settings==2.5.2
 
 # Test
 pytest==8.3.4
+pytest-asyncio==1.2.0  # async seed_failures tests (fixtures)
