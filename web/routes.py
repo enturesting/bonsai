@@ -14,6 +14,7 @@ from sse_starlette.sse import EventSourceResponse
 import fixtures
 from eval.scoring import headline
 from web.sse import sse_events
+from web.state import RUBRIC
 from web.streams import resolve_eval_stream
 from web.templating import templates
 
@@ -52,7 +53,12 @@ async def dashboard(request: Request) -> HTMLResponse:
     claims = [_claim_from_fixture(q) for q in questions]
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "claims": claims, "score": _baseline_score(len(claims))},
+        {
+            "request": request,
+            "claims": claims,
+            "score": _baseline_score(len(claims)),
+            "branches": RUBRIC.branches(),
+        },
     )
 
 
@@ -81,6 +87,20 @@ async def improve_container(request: Request, claim_id: str) -> HTMLResponse:
     )
 
 
+def _growth_observer(claim_id: str):
+    """Record a rubric branch when the improve's score event passes by.
+
+    This is display history only — /web never mints/prunes; it just watches
+    eval_stream's output and remembers that this claim's check evolved.
+    """
+
+    def observe(d: dict) -> None:
+        if d.get("event") == "score":
+            RUBRIC.record_growth(claim_id, bool(d["data"].get("passed")))
+
+    return observe
+
+
 @router.get("/stream/improve/{claim_id}")
 async def stream_improve(claim_id: str) -> EventSourceResponse:
     """Drive eval_stream (real or mock) and emit the §2 events as SSE.
@@ -89,7 +109,15 @@ async def stream_improve(claim_id: str) -> EventSourceResponse:
     """
     stream_fn = resolve_eval_stream()
     return EventSourceResponse(
-        sse_events(claim_id, stream_fn),
+        sse_events(claim_id, stream_fn, observer=_growth_observer(claim_id)),
         ping=20,
         headers={"X-Accel-Buffering": "no"},
+    )
+
+
+@router.get("/tree", response_class=HTMLResponse)
+async def tree(request: Request) -> HTMLResponse:
+    """The bonsai viz: a branch per minted/evolved check (grow history)."""
+    return templates.TemplateResponse(
+        "_treesvg.html", {"request": request, "branches": RUBRIC.branches()}
     )

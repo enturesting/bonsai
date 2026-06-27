@@ -1,0 +1,16 @@
+<div id="tree" hx-get="/tree" hx-trigger="grow from:body" hx-swap="outerHTML">
+  <svg class="bonsai" viewBox="0 0 240 200" role="img" aria-label="bonsai rubric tree">
+    <path class="trunk" d="M120 200 C 112 156 128 104 120 44" />
+    {% for b in branches %}
+    <line class="branch branch--{{ b.status }}{{ ' branch--new' if b.new }}"
+          data-claim="{{ b.claim_id }}"
+          x1="{{ b.x1 }}" y1="{{ b.y1 }}" x2="{{ b.x2 }}" y2="{{ b.y2 }}" />
+    <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new' if b.new }}"
+            data-claim="{{ b.claim_id }}"
+            cx="{{ b.leaf_cx }}" cy="{{ b.leaf_cy }}" r="5">
+      <title>{{ b.claim_id }}</title>
+    </circle>
+    {% endfor %}
+  </svg>
+  <p class="tree-caption">{{ branches|length }} check{{ '' if branches|length == 1 else 's' }} in the rubric</p>
+</div>

@@ -66,8 +66,13 @@ def _env(monkeypatch):
     from config import get_settings
 
     get_settings.cache_clear()
+    # Reset the process-wide rubric so tree state never bleeds between tests.
+    from web.state import RUBRIC
+
+    RUBRIC.reset()
     yield
     get_settings.cache_clear()
+    RUBRIC.reset()
 
 
 @pytest.fixture
