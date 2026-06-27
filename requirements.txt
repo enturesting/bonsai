@@ -8,7 +8,9 @@ httpx==0.27.2
 python-multipart==0.0.9
 
 # Anthropic (grower Opus 4.8 + checker Haiku 4.5)
-anthropic==0.40.0
+# 0.40.0 was pre-structured-outputs: no messages.parse(), no output_config/thinking on create().
+# 0.112.0 has all three (verified vs claude-api skill). httpx/pydantic bounds are wide → no conflict.
+anthropic==0.112.0
 
 # MongoDB Atlas + async driver (motor 3.6 needs pymongo >=4.9,<4.10; dnspython for mongodb+srv://)
 pymongo==4.9.2

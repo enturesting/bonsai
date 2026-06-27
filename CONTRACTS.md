@@ -25,13 +25,21 @@ Endpoint: `GET /stream/improve/{claim_id}` → `EventSourceResponse` (sse-starle
 
 | event | `/loop` dict `data` | wire `data` (`/web` emits) | htmx target / swap |
 |---|---|---|---|
-| `pill` | `{"color":"red\|yellow\|green","check_id":str,"label":str}` | `<span id="pill-{check_id}" class="pill pill--{color}">{LABEL}</span>` | `sse-swap="pill"`, `hx-swap="outerHTML"` |
+| `pill` | `{"color":"red\|yellow\|green","claim_id":str,"label":str}` | `<span id="pill-{claim_id}" class="pill pill--{color}">{LABEL}</span>` | `sse-swap="pill"`, `hx-swap="outerHTML"` |
 | `chunk` | `{"token":str}` | `<span>{html_escaped_token}</span>` | `sse-swap="chunk"`, `hx-swap="beforeend"` into `#rule-stream` |
 | `score` | `{"passed":bool,"before":int,"after":int,"n":int,"ci":[lo,hi]}` | JSON string of that dict | `sse-swap="score"`, `hx-swap="innerHTML"` |
 | `done` | `{}` | `""` | `sse-close="done"` |
 | `error` | `{"message":str}` (optional) | HTML span | `sse-error="abort"` |
 
-Lifecycle, in order: `pill`(yellow / CHECKING…) → `chunk`×N → `pill`(green|red) → `score` → `done`. `ci` floats are 0..1 (Wilson). `score` carries the honesty numbers (counts + CI, never a bare %). Pinned generator + HTML/CSS: `build-cheat-sheet.md` §3.
+Lifecycle, in order: `pill`(yellow / CHECKING…) → `chunk`×N → `pill`(green|red) → `score` → `done`. `ci` floats are 0..1 (Wilson). `score` carries the honesty numbers (counts + CI, never a bare %).
+
+**Envelope (AUTHORITATIVE 2026-06-27 — reconciled to `/loop`'s COMMITTED `engine.py`; this block overrides the table's "/loop dict data" column).** `eval_stream` yields **semantic** dicts shaped `{"event": <name>, "data": {...}}` — **NO HTML** (the cheat-sheet §3a HTML-in-generator shape is superseded; `/web` renders). Exact committed shapes:
+- pill:  `{"event":"pill","data":{"color":"red|yellow|green","check_id":str,"label":str}}`
+- chunk: `{"event":"chunk","data":{"token":str}}`
+- score: `{"event":"score","data":{"passed":bool,"before":int,"after":int,"n":int,"ci":[lo,hi]}}`
+- done:  `{"event":"done","data":{}}`   ·   error: `{"event":"error","data":{"message":str}}`
+
+**⚠️ pill-identity:** the `data["check_id"]` field **holds the `claim_id` value** (engine calls `_pill(claim_id, …)`; the key name is a legacy artifact). Use it as the pill DOM id. `/web/sse.py`: for each dict, render per the wire column using `d["data"]`, then `ServerSentEvent(event=d["event"], data=<rendered>)`. **Pill DOM id = `pill-{d["data"]["check_id"]}` (= claim_id); the dashboard MUST render its pills with the same claim_id value** or the `outerHTML` swap misses. (`/loop` is committed + reviewed — do not change it; `/web` builds to this.)
 
 ---
 
