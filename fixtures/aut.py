@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 
 from config import get_settings
-from store.models import AUTOutput, Source
+from store.models import AUTOutput, Failure, Source
 from fixtures.questions import load_fixture_questions
 
 
@@ -62,3 +62,38 @@ def run_agent(fixture: dict) -> AUTOutput:
 def run_all() -> "list[AUTOutput]":
     """Run the AUT over the entire DEV fixture pool."""
     return [run_agent(fx) for fx in load_fixture_questions()]
+
+
+def _failure_from(fixture: dict, output: AUTOutput) -> Failure:
+    """Build a Failure doc from a designed-failure fixture + the AUT's actual output.
+
+    embedding is left empty; store.save_failure embeds (voyage-3, document) on write,
+    keeping all embedding logic out of /fixtures.
+    """
+    return Failure(
+        id=f"seed-{fixture['id']}",
+        input=output.input,
+        claim=output.claim,
+        expected=fixture.get("expected", ""),
+        actual=output.output,
+        why=fixture.get("why", ""),
+    )
+
+
+async def seed_failures(db) -> "list[Failure]":
+    """Run the AUT over the DEV pool, catch the designed failures, persist to Atlas.
+
+    Returns the saved Failures. Clean fixtures are skipped — only the annotated
+    failure categories seed the initial pool that /loop clusters and mints checks over.
+    """
+    from store import save_failure  # lazy: /store may not be built yet at import time
+
+    saved: "list[Failure]" = []
+    for fixture in load_fixture_questions():
+        if fixture["category"] == "clean":
+            continue
+        output = run_agent(fixture)
+        failure = _failure_from(fixture, output)
+        await save_failure(failure, db)
+        saved.append(failure)
+    return saved

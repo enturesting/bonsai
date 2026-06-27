@@ -12,7 +12,13 @@ This package is the ONLY non-Anthropic (Gemini) seam in Bonsai.
 """
 from __future__ import annotations
 
-from fixtures.aut import run_agent, run_all
+from fixtures.aut import run_agent, run_all, seed_failures
 from fixtures.questions import FAILURE_CATEGORIES, load_fixture_questions
 
-__all__ = ["FAILURE_CATEGORIES", "load_fixture_questions", "run_agent", "run_all"]
+__all__ = [
+    "FAILURE_CATEGORIES",
+    "load_fixture_questions",
+    "run_agent",
+    "run_all",
+    "seed_failures",
+]
