@@ -4,7 +4,7 @@ uvicorn[standard]==0.32.1
 sse-starlette==2.1.3
 jinja2==3.1.4
 aiofiles==24.1.0
-httpx==0.27.2
+httpx==0.28.1   # >=0.28.1 required by google-genai 1.47.0 (Vertex); satisfies anthropic too
 python-multipart==0.0.9
 
 # Anthropic (grower Opus 4.8 + checker Haiku 4.5)
