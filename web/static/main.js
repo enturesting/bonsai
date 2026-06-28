@@ -46,9 +46,12 @@ if (typeof document !== "undefined") {
     if (display) {
       display.innerHTML = renderScore(data);
       display.classList.remove("score-bump");
-      // reflow so the animation re-triggers on every update
-      void display.offsetWidth;
-      display.classList.add("score-bump");
+      // only celebrate a real change — a confirmed failure sends before == after,
+      // and an honesty harness must not bump (scale 1.05) when nothing moved.
+      if (data.after !== data.before) {
+        void display.offsetWidth; // reflow so the animation re-triggers each time
+        display.classList.add("score-bump");
+      }
     }
 
     // flip the rule heading out of its "rewriting…" state once the verdict lands,
