@@ -119,6 +119,28 @@ body {
 .subtitle { color: var(--muted); font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem; }
 .subtitle strong { color: var(--forest-bright); }
 
+/* value-prop strip under the header — lead with the pitch */
+.hero-line {
+  margin: 0;
+  padding: 0.7rem 1.6rem;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+}
+.hero-line strong { color: var(--forest-deep); font-weight: 700; }
+
+/* the moat, made visible on the honesty receipt */
+.receipt-moat {
+  margin: 0.85rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.receipt-moat strong { color: var(--forest-deep); font-weight: 700; }
+.receipt-moat em { color: var(--gold); font-style: normal; font-weight: 600; }
+
 /* ---- layout -------------------------------------------------------------- */
 .grid {
   display: grid;
