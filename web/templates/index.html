@@ -23,10 +23,6 @@
       <form method="post" action="/reset">
         <button type="submit" class="btn btn--ghost" title="Clear the tree and start fresh">&#8634; Reset</button>
       </form>
-      <form hx-post="/run" hx-target="#claims" hx-swap="innerHTML" hx-indicator="#run-spin">
-        <button type="submit" class="btn btn--run">Run AUT over fixtures</button>
-        <span id="run-spin" class="htmx-indicator">running…</span>
-      </form>
     </div>
   </header>
 
