@@ -353,6 +353,9 @@ body {
   animation: blink 1.2s ease-in-out infinite;
 }
 @keyframes blink { 50% { opacity: 0.35; } }
+/* finished state — stop the pulsing dot, mark the rewrite as done */
+.rule-label--done { color: #d4ecdc; }
+.rule-label--done::before { animation: none; background: var(--forest-bright); }
 .rule-stream {
   display: block;
   min-height: 2.6rem;

@@ -50,6 +50,17 @@ if (typeof document !== "undefined") {
       void display.offsetWidth;
       display.classList.add("score-bump");
     }
+
+    // flip the rule heading out of its "rewriting…" state once the verdict lands,
+    // so it reads as finished (the green/red pill is the verdict; this confirms it).
+    const improve = t.closest(".improve");
+    const label = improve && improve.querySelector(".rule-label");
+    if (label) {
+      label.textContent = data.passed
+        ? "✓ check rewritten — it passes now"
+        : "✓ check rewritten — still catches this";
+      label.classList.add("rule-label--done");
+    }
   });
 
   // 2. keep the streaming rule console scrolled to the newest token.

@@ -167,6 +167,11 @@ async def real_cluster_lineage(claim_id: str) -> dict:
     seed_text = (q.get("mock") or {}).get("claim") or q.get("question") or claim_id
 
     scored = await store.nearest_failures_scored(seed_text, db, limit=N_NEAREST)
+    if not scored:
+        # Atlas has no stored failures yet (the failures collection is unseeded) —
+        # fall back to the offline cluster so clicking a branch is never empty
+        # during a live run. Labeled source="mock" (honest about the data).
+        return await mock_cluster_lineage(claim_id)
     minted_check = await loop.grow(_seed_check(q, seed_text), db)
 
     cluster = [
