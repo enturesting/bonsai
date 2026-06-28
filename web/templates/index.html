@@ -11,8 +11,8 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <img class="brand-mark" src="/static/bonsai-logo.png" width="44" height="44"
-           alt="Bonsai — a bonsai forming a checkmark inside a gold enso circle">
+      <span class="brand-mark"><img src="/static/bonsai-logo.png"
+           alt="Bonsai — a bonsai forming a checkmark inside a gold enso circle"></span>
       <div class="brand-text">
         <span class="wordmark">Bonsai</span>
         <span class="tagline">self-improving eval harness</span>
@@ -37,9 +37,9 @@
     </section>
 
     <aside class="side">
+      {% include "_tree.html" %}
       {% include "_score.html" %}
       {% include "_gold.html" %}
-      {% include "_tree.html" %}
     </aside>
   </main>
 

@@ -83,11 +83,20 @@ body {
 }
 .brand { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
 .brand-mark {
-  width: 44px;
-  height: 44px;
-  display: block;
-  object-fit: contain;
+  width: 46px;
+  height: 46px;
   flex: none;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-mark img {
+  width: 66px;       /* scaled up + clipped by the 46px box — crops the logo's
+                        whitespace so the bonsai reads bigger, same bar height */
+  height: 66px;
+  object-fit: contain;
+  display: block;
 }
 .brand-text { display: flex; flex-direction: column; line-height: 1.05; min-width: 0; }
 .wordmark {
