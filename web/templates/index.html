@@ -32,6 +32,27 @@
   <main class="grid">
     <section class="panel claims-panel">
       <h2>Verity&rsquo;s answers <span class="hint">Northbeam trust &amp; security copilot &mdash; each a cited reply to a prospect</span></h2>
+
+      <form class="live-claim" hx-post="/live-claim" hx-target="#claims" hx-swap="afterbegin"
+            hx-on::after-request="if (event.detail.successful) this.reset()">
+        <p class="live-claim-hint"><span class="live-claim-tag">Try it live</span> paste something Verity told a prospect &mdash; watch the harness check the one you just typed.</p>
+        <textarea name="claim" rows="2" required
+                  placeholder="A claim the agent made — e.g. &ldquo;Our SOC 2 report covers all five trust criteria.&rdquo;"></textarea>
+        <textarea name="source" rows="2"
+                  placeholder="Paste the source text it cited (optional)…"></textarea>
+        <div class="live-claim-row">
+          <select name="category" aria-label="failure class">
+            <option value="unsupported-numeric">unsupported-numeric</option>
+            <option value="fabricated-quote">fabricated-quote</option>
+            <option value="stale-wrong-citation">stale-wrong-citation</option>
+            <option value="single-source-overcite">single-source-overcite</option>
+            <option value="vague-not-checkable">vague-not-checkable</option>
+            <option value="clean">clean (well-supported)</option>
+          </select>
+          <button type="submit" class="btn btn--run">Add claim &rarr;</button>
+        </div>
+      </form>
+
       <div id="claims">
         {% include "_claims.html" %}
       </div>

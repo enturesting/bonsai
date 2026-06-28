@@ -1,0 +1,10 @@
+<div id="score-display" class="score-display"
+     data-before="{{ score.before }}" data-after="{{ score.after }}" data-n="{{ score.n }}">
+  <div class="score-counts">
+    <span class="score-before">{{ score.before }}</span>
+    <span class="score-arrow">&rarr;</span>
+    <span class="score-after">{{ score.after }}</span>
+    <span class="score-of">/ {{ score.n }} green</span>
+  </div>
+  <div class="score-ci">95% CI [{{ "%.1f"|format(score.ci[0] * 100) }}%, {{ "%.1f"|format(score.ci[1] * 100) }}%]</div>
+</div>

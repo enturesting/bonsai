@@ -104,9 +104,32 @@ def _verdict(*, caught_siblings: int, n_known_good: int, passed_known_good: bool
 
 
 async def mock_cluster_lineage(claim_id: str) -> dict:
-    """Rebuild a faithful lineage from the offline fixture pool (no Atlas)."""
-    questions = fixtures.load_fixture_questions()
+    """Rebuild a faithful lineage from the offline fixture pool (+ live claims, no Atlas)."""
+    from web.live_claims import pool_with_live
+
+    questions = pool_with_live()
     q = _resolve(claim_id, questions)
+    # A clean seed has no failure to cluster — short-circuit to a "nothing to mint"
+    # card. The failure filter below is seed-INDEPENDENT, so a clean seed would
+    # otherwise get a full sibling cluster + is_general=True, rendering a confident
+    # "minted a general check, caught N siblings" panel over a claim the audience
+    # just watched flip GREEN — the inverse of the "cleared a false positive" story.
+    if q.get("category") == "clean":
+        return {
+            "claim_id": claim_id,
+            "source": "mock",
+            "clean": True,
+            "seed": {
+                "id": _seed_id(q.get("id", claim_id)),
+                "claim": (q.get("mock") or {}).get("claim", ""),
+                "why": "well-supported",
+            },
+            "cluster": [],
+            "k": 0,
+            "minted": None,
+            "verdict": {"is_general": False, "passed_known_good": True,
+                        "caught_siblings": 0, "n_known_good": None},
+        }
     failures = [x for x in questions if x.get("category") != "clean"]
     known_good = [x for x in questions if x.get("category") == "clean"]
 

@@ -66,13 +66,17 @@ def _env(monkeypatch):
     from config import get_settings
 
     get_settings.cache_clear()
-    # Reset the process-wide rubric so tree state never bleeds between tests.
+    # Reset the process-wide rubric + live-claim registry so neither tree state nor
+    # typed claims bleed between tests (both are module-global).
     from web.state import RUBRIC
+    from web.live_claims import LIVE
 
     RUBRIC.reset()
+    LIVE.reset()
     yield
     get_settings.cache_clear()
     RUBRIC.reset()
+    LIVE.reset()
 
 
 @pytest.fixture

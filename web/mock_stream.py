@@ -38,7 +38,11 @@ def _delay() -> float:
 
 
 def _questions() -> list:
-    return fixtures.load_fixture_questions()
+    # merged pool so live (typed-on-stage) claim ids resolve to themselves and the
+    # running score's n / green counts include them (lazy import avoids a cycle).
+    from web.live_claims import pool_with_live
+
+    return pool_with_live()
 
 
 def _resolve(claim_id: str, questions: list) -> dict:

@@ -1,15 +1,6 @@
 <section class="panel score-panel">
   <h2>Score <span class="hint">counts + Wilson 95% CI</span></h2>
   <div class="receipt-eyebrow">working pool · greens before &rarr; after</div>
-  <div id="score-display" class="score-display"
-       data-before="{{ score.before }}" data-after="{{ score.after }}" data-n="{{ score.n }}">
-    <div class="score-counts">
-      <span class="score-before">{{ score.before }}</span>
-      <span class="score-arrow">→</span>
-      <span class="score-after">{{ score.after }}</span>
-      <span class="score-of">/ {{ score.n }} green</span>
-    </div>
-    <div class="score-ci">95% CI [{{ "%.1f"|format(score.ci[0] * 100) }}%, {{ "%.1f"|format(score.ci[1] * 100) }}%]</div>
-  </div>
+  {% include "_score_display.html" %}
   <p class="receipt-moat">these are the <strong>working-pool</strong> greens the loop optimizes. The rubric is <em>separately</em> graded against a <strong>frozen gold set the loop has no code path to read</strong> — a build-failing test enforces it.</p>
 </section>

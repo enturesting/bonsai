@@ -16,7 +16,9 @@ from sse_starlette.sse import EventSourceResponse
 
 import fixtures
 from eval.scoring import headline
-from web.lineage import resolve_cluster_lineage
+from web.lineage import mock_cluster_lineage, resolve_cluster_lineage
+from web.live_claims import LIVE, pool_with_live
+from web.mock_stream import mock_eval_stream
 from web.sse import sse_events
 from web.state import RUBRIC
 from web.streams import resolve_eval_stream
@@ -72,7 +74,9 @@ def _load_gold_result() -> dict | None:
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request) -> HTMLResponse:
-    questions = fixtures.load_fixture_questions()
+    # merged pool: the board AND the baseline n must come from the SAME pool the
+    # score stream uses (pool_with_live), or they diverge after a refresh.
+    questions = pool_with_live()
     claims = [_claim_from_fixture(q) for q in questions]
     return templates.TemplateResponse(
         "index.html",
@@ -100,7 +104,37 @@ async def reset(request: Request) -> RedirectResponse:
     in the process-wide RUBRIC). Redirects back to a clean dashboard.
     """
     RUBRIC.reset()
+    LIVE.reset()
     return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/live-claim", response_class=HTMLResponse)
+async def live_claim(request: Request) -> HTMLResponse:
+    """Add a presenter-typed claim as a fixture-shaped tile (mock path only).
+
+    Renders just the new RED tile. The tile then drives the SAME §2 SSE lifecycle
+    as any fixture — the mock is forced for live ids (see /stream/improve and /tree
+    below), so it stays deterministic even on a key-present deployment.
+    """
+    form = await request.form()
+    claim = (form.get("claim") or "").strip()
+    if not claim:  # empty box → no-op (the form's after-request guard keeps typed text)
+        return HTMLResponse("")
+    entry = LIVE.add(
+        claim=claim,
+        source_text=(form.get("source") or "").strip(),
+        category=(form.get("category") or "unsupported-numeric").strip(),
+        question=(form.get("question") or "").strip(),
+    )
+    # Render JUST the tile — NO out-of-band score swap. _baseline_score is all-RED
+    # (before=0/after=0), and an hx-swap-oob would outerHTML-replace #score-display,
+    # clobbering the running greens main.js rendered after a prior flip (the primary
+    # path is flip → "now you try" → add). The next improve's score event carries the
+    # correct n from pool_with_live() and self-corrects the denominator.
+    return templates.TemplateResponse(
+        "_claim.html",
+        {"request": request, "c": _claim_from_fixture(entry)},
+    )
 
 
 @router.post("/run", response_class=HTMLResponse)
@@ -110,7 +144,9 @@ async def run(request: Request) -> HTMLResponse:
     claim_id == fixture id, so the pills the dashboard mints match the
     data.check_id values eval_stream will later emit.
     """
-    questions = fixtures.load_fixture_questions()
+    # build from the MERGED pool so re-running can never wipe live tiles / desync n
+    # (this route is currently UI-dead — the Run button was removed — but stays safe).
+    questions = pool_with_live()
     claims = []
     for q in questions:
         try:
@@ -152,7 +188,10 @@ async def stream_improve(claim_id: str) -> EventSourceResponse:
 
     The pill DOM id the events carry == claim_id, matching the dashboard's pills.
     """
-    stream_fn = resolve_eval_stream()
+    # Live (typed-on-stage) claims are presenter-scripted: force the deterministic
+    # mock even on a key-present box (the real engine would mis-resolve the live id
+    # to questions[0] or run the live AUT over typed text).
+    stream_fn = mock_eval_stream if claim_id in LIVE.ids() else resolve_eval_stream()
     return EventSourceResponse(
         sse_events(claim_id, stream_fn, observer=_growth_observer(claim_id)),
         ping=20,
@@ -177,7 +216,12 @@ async def tree_lineage(request: Request, claim_id: str) -> HTMLResponse:
     seams (store.nearest_failures / loop.grow) or, offline, the scripted mock —
     /web owns no clustering/minting itself.
     """
-    lineage = await resolve_cluster_lineage()(claim_id)
+    # main.js auto-fetches this on every flip; for a live id force the mock lineage
+    # so a key-present box never runs real Voyage+Atlas+loop.grow over typed text
+    # (slow / non-deterministic / can hang). One guard covers the auto-fetch AND a
+    # clicked grown leaf (same route).
+    lineage_fn = mock_cluster_lineage if claim_id in LIVE.ids() else resolve_cluster_lineage()
+    lineage = await lineage_fn(claim_id)
     return templates.TemplateResponse(
         "_lineage.html", {"request": request, "lineage": lineage}
     )

@@ -179,6 +179,56 @@ body {
 /* the cluster→mint lineage fades in when it auto-reveals after a flip */
 .lineage { animation: fadein 0.45s ease both; }
 
+/* ---- live-claim form (type a claim on stage) ----------------------------- */
+.live-claim {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 1.1rem;
+  padding: 0.9rem 1rem;
+  background: var(--paper-3);
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+}
+.live-claim-hint { margin: 0 0 0.1rem; font-size: 0.8rem; color: var(--muted); }
+.live-claim-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-right: 0.4rem;
+}
+.live-claim textarea {
+  font: inherit;
+  font-size: 0.9rem;
+  width: 100%;
+  resize: vertical;
+  padding: 0.5rem 0.6rem;
+  color: var(--ink);
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+}
+.live-claim textarea:focus-visible { outline: 2px solid var(--forest-bright); outline-offset: 1px; }
+.live-claim-row { display: flex; gap: 0.6rem; align-items: center; }
+.live-claim select {
+  font: inherit;
+  font-size: 0.84rem;
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  color: var(--ink);
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+}
+
+/* clean-claim lineage — the "cleared a false positive, nothing to mint" card */
+.lineage--clean { border-left: 3px solid var(--green-line); }
+.lineage-clean { margin: 0.5rem 0 0.4rem; font-size: 0.84rem; color: var(--ink-soft); }
+.lineage--clean .lineage-title { color: var(--green); }
+
 /* ---- layout -------------------------------------------------------------- */
 .grid {
   display: grid;

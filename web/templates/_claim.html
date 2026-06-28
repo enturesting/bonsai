@@ -1,0 +1,18 @@
+<article class="claim" id="claim-{{ c.id }}">
+  <div class="claim-head">
+    <span class="claim-cat claim-cat--{{ c.category }}">{{ c.category }}</span>
+    <div id="improve-{{ c.id }}" class="improve-slot">
+      {% with check_id=c.id, color="red", label="RED" %}{% include "_pill.html" %}{% endwith %}
+    </div>
+  </div>
+  {% if c.question %}<p class="claim-q">{{ c.question }}</p>{% endif %}
+  <p class="claim-text">{{ c.claim }}</p>
+  <p class="claim-by">
+    <span class="badge badge--gemini">Answered by Verity &middot; Gemini 3.5</span>
+    {% for s in c.citations %}<span class="cite">[{{ s }}]</span>{% endfor %}
+  </p>
+  <button class="btn btn--improve"
+          hx-get="/fragment/improve-container/{{ c.id }}"
+          hx-target="#improve-{{ c.id }}"
+          hx-swap="innerHTML">Improve &rarr;</button>
+</article>

@@ -1,3 +1,13 @@
+{% if lineage.clean %}
+<div class="lineage lineage--clean">
+  <div class="lineage-head">
+    <span class="lineage-title">✓ Well-supported</span>
+    <span class="lineage-src">nothing to mint</span>
+  </div>
+  <p class="lineage-clean">No failure to cluster &mdash; the cited source backs this claim, so there&rsquo;s nothing for the grower to mint.</p>
+  {% if lineage.seed.claim %}<p class="lin-claim">{{ lineage.seed.claim }}</p>{% endif %}
+</div>
+{% else %}
 {% set v = lineage.verdict %}
 <div class="lineage lineage--{{ lineage.source }}">
   <div class="lineage-head">
@@ -48,3 +58,4 @@
     </div>
   </div>
 </div>
+{% endif %}
