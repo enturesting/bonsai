@@ -141,6 +141,11 @@ body {
 .receipt-moat strong { color: var(--forest-deep); font-weight: 700; }
 .receipt-moat em { color: var(--gold); font-style: normal; font-weight: 600; }
 
+/* the gold panel — the TRUE honesty receipt (vs the working-pool panel) */
+.gold-panel { border-left: 3px solid var(--forest-bright); margin-top: 0.9rem; }
+.gold-eyebrow { color: var(--forest-bright); }
+.gold-eyebrow::after { border-top-color: rgba(44, 122, 77, 0.3); }
+
 /* ---- layout -------------------------------------------------------------- */
 .grid {
   display: grid;

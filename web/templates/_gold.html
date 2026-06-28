@@ -1,0 +1,16 @@
+{% if gold_result %}
+<section class="panel gold-panel">
+  <h2>Honesty receipt <span class="hint">vs frozen gold</span></h2>
+  <div class="receipt-eyebrow gold-eyebrow">agreement with frozen gold &middot; {{ gold_result.n }} held-out items</div>
+  <div class="score-display">
+    <div class="score-counts">
+      <span class="score-before">{{ gold_result.before }}</span>
+      <span class="score-arrow">&rarr;</span>
+      <span class="score-after up">{{ gold_result.after }}</span>
+      <span class="score-of">/ {{ gold_result.n }} agree</span>
+    </div>
+    <div class="score-ci">95% CI [{{ "%.1f"|format(gold_result.ci[0] * 100) }}%, {{ "%.1f"|format(gold_result.ci[1] * 100) }}%]{% if gold_result.sign_test %} &middot; {{ gold_result.sign_test.helped }} helped, {{ gold_result.sign_test.hurt }} hurt{% endif %}</div>
+  </div>
+  <p class="receipt-moat">the grown rubric agrees with the <strong>human-frozen gold set</strong> on more held-out items than the seed baseline &mdash; scored against a set the loop <strong>has no code path to read</strong>. Direction + Wilson CI, <em>never a bare&nbsp;%</em>.</p>
+</section>
+{% endif %}

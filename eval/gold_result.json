@@ -1,0 +1,17 @@
+{
+  "before": 9,
+  "after": 11,
+  "n": 15,
+  "ci": [
+    0.48,
+    0.891
+  ],
+  "sign_test": {
+    "helped": 3,
+    "hurt": 1,
+    "n": 4,
+    "p": 0.3125
+  },
+  "checks_before": 1,
+  "checks_after": 6
+}

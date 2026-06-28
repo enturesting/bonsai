@@ -7,6 +7,9 @@ Mongo / Voyage / Anthropic / Gemini directly.
 """
 from __future__ import annotations
 
+import json
+import os
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sse_starlette.sse import EventSourceResponse
@@ -52,6 +55,21 @@ def _baseline_score(n: int) -> dict:
     return headline([False] * n, [False] * n)
 
 
+_GOLD_RESULT_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "eval", "gold_result.json"
+)
+
+
+def _load_gold_result() -> dict | None:
+    """The PRECOMPUTED gold-gap number (seed vs grown rubric scored against the frozen
+    gold set) — display only. /web reads the result file, never the gold items."""
+    try:
+        with open(_GOLD_RESULT_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request) -> HTMLResponse:
     questions = fixtures.load_fixture_questions()
@@ -63,6 +81,7 @@ async def dashboard(request: Request) -> HTMLResponse:
             "claims": claims,
             "score": _baseline_score(len(claims)),
             "branches": RUBRIC.branches(),
+            "gold_result": _load_gold_result(),
         },
     )
 
