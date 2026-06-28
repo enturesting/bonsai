@@ -288,7 +288,7 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.06 ./.venv/bin/uvicorn main:app --
 
 ## Prior art & positioning
 
-The landscape is crowded — failure clustering, generality gating, automated check synthesis, and self-improving loops all have strong 2024–2026 prior art (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, EvalAssist, GER-Eval). Novelty is argued at the level of **mechanism combination + enforcement**, not any single part. The defensible wedge: Bonsai is the only surveyed system that puts an **architectural honesty gate on the eval-generation pipeline itself** and reports improvement as **direction + confidence interval**. Full survey with adversarial verification, confidence levels, and the threats we pre-empt: see the prior-art writeup in the project notes.
+The landscape is crowded — failure clustering, generality gating, automated check synthesis, and self-improving loops all have strong 2024–2026 prior art (EvalGen, SPADE, LangSmith Engine, G-Eval, Self-Rewarding LMs, Constitutional AI). Novelty is argued at the level of **mechanism combination + enforcement**, not any single part. The defensible wedge: Bonsai is the only surveyed system that puts an **architectural honesty gate on the eval-generation pipeline itself** and reports improvement as **direction + confidence interval**. Full survey with adversarial verification, confidence levels, and the threats we pre-empt: see the prior-art writeup in the project notes.
 
 **Honest framing we hold to:** the gold gate guarantees *the loop can't overfit to the judge* — it does **not** guarantee *the judge is complete*. We defend the former; we concede the latter.
 

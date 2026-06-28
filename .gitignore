@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 .DS_Store
 node_modules/
+
+# local demo-day working files (not for the judged repo)
+demo-day/
+wrap-research/
+.playwright-mcp/
