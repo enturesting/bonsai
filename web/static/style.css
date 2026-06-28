@@ -456,6 +456,13 @@ body {
 .leaf--seed  { fill: #9bb196; }
 .leaf--green { fill: url(#leafGrad); }
 .leaf--amber { fill: var(--gold-bright); }
+
+/* apex crown + soft foliage pads — a fuller, whole-tree canopy (fills the top) */
+.crown-pad  { fill: #1b4a31; opacity: 0.9; }
+.crown-leaf { fill: url(#leafGrad); }
+.crown-hi   { fill: #6fc08f; opacity: 0.5; }
+.leaf-pad   { opacity: 0.5; }
+.leaf-pad--new { animation: fadein 0.5s 0.32s both; }
 .tree-caption {
   margin: 0.5rem 0 0;
   font-size: 0.78rem;

@@ -14,6 +14,20 @@
     <ellipse class="soil" cx="120" cy="190" rx="46" ry="7" />
     <path class="trunk" d="M120 192 C 110 154 130 110 118 70 C 113 56 120 50 120 44" />
 
+    {# apex crown — the canopy that always tops the tree, so the silhouette reads as
+       a whole bonsai even with few branches (this fills the previously-bare top) #}
+    <g class="crown" aria-hidden="true">
+      <ellipse class="crown-pad" cx="120" cy="40" rx="33" ry="25" />
+      <circle class="crown-leaf" cx="103" cy="45" r="13" />
+      <circle class="crown-leaf" cx="138" cy="43" r="14" />
+      <circle class="crown-leaf" cx="111" cy="27" r="12" />
+      <circle class="crown-leaf" cx="131" cy="26" r="12" />
+      <circle class="crown-leaf" cx="120" cy="18" r="12" />
+      <circle class="crown-leaf" cx="120" cy="37" r="15" />
+      <circle class="crown-hi" cx="113" cy="31" r="5" />
+      <circle class="crown-hi" cx="128" cy="33" r="4.5" />
+    </g>
+
     {% for b in branches %}
     {# grown nodes (not the seed) open their Atlas cluster lineage on click #}
     {% set clickable = b.status != "seed" %}
@@ -21,6 +35,9 @@
     <path class="branch branch--{{ b.status }}{{ ' branch--new' if b.new }}"
           data-claim="{{ b.claim_id }}"
           d="M{{ b.x1 }} {{ b.y1 }} Q {{ b.ctrl_x }} {{ b.ctrl_y }} {{ b.x2 }} {{ b.y2 }}" />
+    {# soft foliage pad — a leafy mass behind the crisp leaves so each tip reads full #}
+    <circle class="leaf-pad leaf--{{ b.status }}{{ ' leaf-pad--new' if b.new }}"
+            cx="{{ b.leaf_cx }}" cy="{{ b.leaf_cy }}" r="9" />
     {# foliage cluster: the primary leaf is the click target; two fan out for fullness #}
     <circle class="leaf leaf--{{ b.status }}{{ ' leaf--new leaf-a' if b.new }}{{ ' leaf--clickable' if clickable }}"
             data-claim="{{ b.claim_id }}"
