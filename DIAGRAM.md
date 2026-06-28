@@ -64,6 +64,12 @@ flowchart TB
 
 > The honesty claim dies on a single leak, so it's enforced **in code, not by discipline**.
 
+> **Frozen gold — what it is, and where it's going**
+>
+> **Today.** "Frozen gold" is a small (15-item), human-authored, held-out reference of correct/incorrect answers. The improving loop is *build-time-provably* unable to read it — a CI test fails the build if `/loop` ever touches `eval/gold`. It's used for one thing only: scoring whether the loop's self-improvement **agrees with human judgment** — reported as direction, counts, and a Wilson 95% CI, never a bare percentage. Agreement is not proof of honesty; it's an independent check the loop can't game.
+>
+> **Enterprise future state.** In production, each gold set is owned by a **domain contract owner** — the compliance lead, security reviewer, or legal/policy expert for that domain. The people accountable for "what good looks like" define the held-out truth; the harness autonomously grows the checks. Separation of powers: the **domain expert defines truth**, the **loop improves coverage**.
+
 ---
 
 ## 3. "How is a minted check *general*, not memorized?"

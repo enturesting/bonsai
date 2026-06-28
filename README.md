@@ -14,7 +14,7 @@
 ```bash
 cd bonsai
 python -m venv .venv && ./.venv/bin/pip install -r requirements.txt
-WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.03 ./.venv/bin/uvicorn main:app --port 8000
+WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.06 ./.venv/bin/uvicorn main:app --port 8000
 ```
 
 Open **http://localhost:8000** → pick a **red** claim (a Gemini-3.5 cited answer whose number isn't actually in the source it cites) → click **Improve**:
@@ -45,6 +45,12 @@ That separation is the point. Lots of systems generate evals. Bonsai is the one 
 > **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-checked invariant — its autonomous, failure-clustered check-minting loop has **no static code path to read** the frozen gold set it is scored against (a test fails the build the instant one appears), so every reported improvement is a direction-plus-confidence-interval against a reference the loop cannot fit to.*
 
 Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, Self-Harness). What's new here is *gating the generator* — see [`prior-art`](#prior-art--positioning) below.
+
+### What "frozen gold" is — and where it goes
+
+**Today** it's a small (15-item), human-authored, held-out reference of correct/incorrect answers the improving loop is *build-time-provably* unable to read — a CI test fails the build if `/loop` ever touches `eval/gold`. It scores exactly one thing: whether the loop's self-improvement **agrees with human judgment** — direction, counts, and a Wilson 95% CI, never a bare %. Agreement isn't proof of honesty; it's an independent check the loop can't game.
+
+**In production**, each gold set is owned by a **domain contract owner** — the compliance lead, security reviewer, or legal/policy expert accountable for "what good looks like." They define the held-out truth; the harness autonomously grows the checks. Separation of powers: the **domain expert defines truth, the loop improves coverage.**
 
 ---
 
@@ -136,7 +142,7 @@ The loop autonomously catches failures, clusters them by embedding (Atlas `$vect
 ### Offline demo (deterministic, zero keys) — recommended for first look
 
 ```bash
-WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.03 ./.venv/bin/uvicorn main:app --port 8000
+WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.06 ./.venv/bin/uvicorn main:app --port 8000
 ```
 
 ### Live (real services)
