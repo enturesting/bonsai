@@ -66,8 +66,10 @@ async def known_good_sample(db, k: int = 8) -> list[AUTOutput]: ...  # held-back
 
 ### `/loop` — eval engine (cheat-sheet §2)
 
+**LLM backend (one seam — `loop/llm.py`).** The whole loop — `run_check` / `skeptic` / `grow` / `rewrite_rule_stream` — routes through `loop/llm.py` behind **`LOOP_BACKEND`**. Default **`gemini`** (Gemini 3.5 via Vertex/ADC — keyless, all-Google). Alternate **`anthropic`** runs the SAME functions on Opus 4.8 / Haiku 4.5 (the constants + request shapes below). **Cross-family independence:** the agent-under-test is always Gemini (`/fixtures`); set `LOOP_BACKEND=anthropic` so the checker/grower judges it from a *different* model family (Claude) — the headline config is then not "Gemini grading Gemini." The deterministic check anchors the demo task regardless of backend.
+
 ```python
-HAIKU = "claude-haiku-4-5"; OPUS = "claude-opus-4-8"; CONF_FLOOR = 0.75
+HAIKU = "claude-haiku-4-5"; OPUS = "claude-opus-4-8"; CONF_FLOOR = 0.75   # anthropic backend
 PRUNE_HI, PRUNE_LO = 0.95, 0.05
 
 def deterministic(check: Check, claim: str, output: AUTOutput) -> bool | None: ...
@@ -140,7 +142,7 @@ env (SECRET): MONGODB_URI · ANTHROPIC_API_KEY · VOYAGE_API_KEY · GEMINI_API_K
 - `claim` is the atomic eval unit everywhere; `AUTOutput.sources_text` is what deterministic checks match quotes against.
 - Embeddings are **always** 1024-dim voyage-3: failures `input_type="document"`, queries `input_type="query"`.
 - Rubric = `list[Check]`; it mutates only via `grow`/`prune` over the **working pool**, never the gold set.
-- All Opus calls: `thinking={"type":"adaptive"}` + `output_config={"effort":"high"}`, no `budget_tokens`. All Haiku calls: plain (no `effort`, no adaptive). **Smoke-test these param names against the live SDK first.**
+- **LLM request shapes are per-backend, all behind `loop/llm.py`:** *gemini* (default) — Vertex `response_schema` JSON mode for structured verdicts/checks + `thinking_budget=0` (Gemini 3.x thinking shares the output budget, so disable it); *anthropic* — Opus calls `thinking={"type":"adaptive"}` + `output_config={"effort":"high"}` (no `budget_tokens`), Haiku plain.
 - Models imported from `store.models`; no terminal redefines `Failure/Check/Verdict/AUTOutput/Source`.
-- `/loop` never imports `/eval`; `/fixtures` never imports `/loop`,`/store`,`/web` (except `store.models` + `store.save_failure` inside `seed_failures`); `/fixtures` is the ONLY non-Anthropic (Gemini) seam.
+- `/loop` never imports `/eval`; `/fixtures` never imports `/loop`,`/store`,`/web` (except `store.models` + `store.save_failure` inside `seed_failures`). `/fixtures` is the **agent-under-test** seam (always Gemini); the loop's **checker/grower** also run on Gemini by default (`LOOP_BACKEND=gemini`) or Claude (`anthropic`) — each behind its own seam (`fixtures/gemini_client.py`, `loop/llm.py`).
 - This is an **eval harness**, not "basic RAG." Say harness.
