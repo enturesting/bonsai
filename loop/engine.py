@@ -169,5 +169,8 @@ async def eval_stream(claim_id: str):
     except asyncio.CancelledError:
         raise  # client disconnected mid-stream; let sse-starlette close cleanly
     except Exception as exc:  # noqa: BLE001 — surface any failure to the UI, then close
+        # Flip the pill to a visible failed state (never leave it stuck yellow),
+        # then surface the message and terminate the stream.
+        yield _pill(claim_id, "red", "ERROR")
         yield {"event": "error", "data": {"message": str(exc)}}
         yield {"event": "done", "data": {}}

@@ -77,8 +77,12 @@ async def run(request: Request) -> HTMLResponse:
     questions = fixtures.load_fixture_questions()
     claims = []
     for q in questions:
-        output = fixtures.run_agent(q)
-        claims.append(_claim_from_output(q, output))
+        try:
+            claims.append(_claim_from_output(q, fixtures.run_agent(q)))
+        except Exception:  # noqa: BLE001
+            # one malformed/blocked live AUT answer must not 500 the whole board —
+            # fall back to this tile's offline claim so the board stays complete.
+            claims.append(_claim_from_fixture(q))
     return templates.TemplateResponse(
         "_claims.html", {"request": request, "claims": claims}
     )

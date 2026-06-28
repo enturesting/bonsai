@@ -6,4 +6,6 @@
   {% include "_rule.html" %}
   {# score event lands here as JSON; main.js formats it into the running score #}
   <div id="score-raw" class="score-raw" sse-swap="score" hx-swap="innerHTML" hidden></div>
+  {# error event lands here so a failure is visible (with the red pill above), not a freeze #}
+  <div class="stream-error-slot" sse-swap="error" hx-swap="innerHTML"></div>
 </div>

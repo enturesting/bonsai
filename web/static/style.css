@@ -356,6 +356,9 @@ body {
 /* finished state — stop the pulsing dot, mark the rewrite as done */
 .rule-label--done { color: #d4ecdc; }
 .rule-label--done::before { animation: none; background: var(--forest-bright); }
+/* error surfacing — a failure shows here (with the red pill) instead of freezing */
+.stream-error-slot:empty { display: none; }
+.stream-error { display: inline-block; margin-top: 0.4rem; font-size: 0.72rem; }
 .rule-stream {
   display: block;
   min-height: 2.6rem;

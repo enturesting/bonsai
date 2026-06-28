@@ -90,6 +90,7 @@ async def mock_eval_stream(claim_id: str):
             "data": {"passed": passed, "before": before, "after": after, "n": n, "ci": [lo, hi]},
         }
         yield {"event": "done", "data": {}}
-    except Exception as exc:  # mirror eval_stream: error THEN done, so the SSE closes
+    except Exception as exc:  # mirror eval_stream: red pill + error THEN done, so the SSE closes
+        yield _pill(claim_id, "red", "ERROR")
         yield {"event": "error", "data": {"message": str(exc)}}
         yield {"event": "done", "data": {}}

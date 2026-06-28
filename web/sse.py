@@ -82,6 +82,8 @@ async def sse_events(
                 observer(d)
             yield to_sse(d)
     except Exception as exc:  # belt-and-suspenders; eval_stream also self-reports
+        # Flip the pill red (never a frozen yellow) before surfacing the message.
+        yield to_sse({"event": "pill", "data": {"check_id": claim_id, "color": "red", "label": "ERROR"}})
         yield to_sse({"event": "error", "data": {"message": str(exc)}})
         # done is the only terminator (sse-close="done"); without it the browser
         # EventSource auto-reconnects and the run spinner hangs.
