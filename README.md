@@ -33,6 +33,26 @@ Evals are the bottleneck on safe autonomy: writing them is manual, they go stale
 
 ---
 
+## Bonsai in plain language
+
+Bonsai is a **harness** (a test rig — not "RAG") that watches an AI answer-bot and helps it stop repeating the same kinds of mistakes.
+
+**Voyage — the meaning fingerprint.** Every time the bot gives a bad answer, we hand Voyage (an embedding model) the whole story — the question, the bad claim, and *why* it was wrong. Voyage turns that into a 1024-number "fingerprint" of its **meaning**, so two mistakes that *mean* the same thing **land very close together** even when the words are totally different.
+
+**Atlas `$vectorSearch` — find the lookalikes, fast.** We keep all those fingerprints in MongoDB Atlas. Given a fresh mistake's fingerprint, Atlas returns its **nearest past mistakes in milliseconds** — like a librarian who, shown one book, instantly pulls the others that are *about the same thing*.
+
+**Why that makes a check general, not overfit.** Instead of writing a rule that nags about *one* bad answer, we use the lookalikes to see **others in that mistake's family**. A new check is only kept if it **passes every known-good answer AND catches at least 2 of its family members** — so it polices the *kind* of error, not the single example.
+
+**The loop, in one breath.** **Catch** a bad answer → **cluster** it with its lookalikes → **mint** a general check → **grow** the rulebook (and prune dead rules) → **check** it didn't regress.
+
+**The honesty rail, in one breath.** The self-improving loop is never allowed to peek at the frozen answer key; a build-time test fails the whole build if it tries to read it. (It's a guardrail check, not an unbreakable wall.)
+
+**The two scores — and the difference matters.**
+- **Working score (live):** how the bot is doing right now, on real traffic.
+- **Honesty receipt (frozen):** a small held-out gold set, written once by a human expert who owns "what good looks like." It **agrees with human judgment** — it's a *receipt* that we stayed honest, not a proof. We report it as a **direction, counts, and a confidence interval**, never a lonely percentage.
+
+---
+
 ## 🛡️ The moat
 
 Two things, and the second is the wedge:
@@ -134,6 +154,83 @@ The loop autonomously catches failures, clusters them by embedding (Atlas `$vect
 | `/loop` | The eval engine — checker → skeptic → grower/minting → pruner → `eval_stream` SSE. Runs on **Gemini 3.5 via Vertex** by default (`LOOP_BACKEND=gemini`) so the whole loop is keyless Google; or Opus 4.8 / Haiku 4.5 with an Anthropic key |
 | `/eval` | Frozen-gold scoring — Wilson CI + paired sign-test; the honesty gate's test lives here |
 | `/web` | The htmx + SSE flip UI — pill, token-streamed rule rewrite, bonsai-tree, score panel |
+
+---
+
+## Where Bonsai fits
+
+Bonsai isn't a model and it isn't the agent — it's the **checking loop** that sits *between* a cited-answer agent and the customer, and *inside* your CI. Two rules hold throughout: **gold *agrees* with human judgment, it never *proves* honesty**, and improvement is reported as **direction + a Wilson CI, never a bare %**.
+
+### (a) Stack-fit — where Bonsai's rubric fits in the request path (conceptual)
+
+```mermaid
+flowchart LR
+    user["Customer / prospect<br/>asks a question"] --> agent
+    subgraph PROD["Your product — a cited-answer agent"]
+        agent["Agent-under-test (Gemini 3.5)<br/>security copilot · contract analyzer · support bot<br/>writes an answer WITH [S#] citations"]
+    end
+    agent -->|"draft cited answer"| check
+    subgraph BONSAI["Bonsai harness — a checking loop (it never answers)"]
+        check{"Every claim has verbatim<br/>support in its cited source?"}
+        catch["Catch the unsupported claim"]
+        cluster["Cluster nearest past failures<br/>Atlas $vectorSearch · voyage-3 · 1024-dim"]
+        mint["Mint a GENERAL check<br/>is_general gate"]
+        grow[("Rubric — grows / prunes")]
+        check -->|"no"| catch --> cluster --> mint --> grow
+        grow -. "checks the next answer" .-> check
+    end
+    check -->|"yes — passes the rubric"| ship["✅ Reaches the customer"]
+    catch -. "flagged / held before send" .-> hold["⛔ Blocked for human review"]
+```
+
+*Conceptual placement — a draft passes Bonsai's rubric before the customer sees it: supported answers ship, an unsupported claim is flagged and held, and the very failure that caught it mints a general check so the rubric is stronger next time. Today Bonsai runs as a CI eval harness; the same rubric is what a runtime gate would enforce.*
+
+### (b) Personas — who touches what, and who's blocked from what
+
+```mermaid
+flowchart TB
+    owner["👤 Domain contract owner<br/>compliance / security / legal expert"]
+    eng["👤 Platform / QA engineer"]
+    agent["🤖 Agent-under-test<br/>any cited-answer agent"]
+    gold[("🔒 Frozen gold<br/>~15 held-out 'what good looks like' items")]
+    ci{{"CI build · runs Bonsai +<br/>the honesty-rail lint"}}
+    loop["🌳 Bonsai loop<br/>catch → cluster → mint → grow / prune"]
+    pool[("Working pool<br/>the loop may mutate")]
+    receipt["📜 Honesty receipt<br/>direction + Wilson CI (agrees, never proves)"]
+
+    owner -->|"authors / owns"| gold
+    eng -->|"wires Bonsai into"| ci
+    ci --> loop
+    agent -->|"cited answers feed"| loop
+    loop -->|"grows the rubric over"| pool
+    pool --> receipt
+    gold -->|"scored against (held out)"| receipt
+    eng -->|"reads each run"| receipt
+    loop -. "❌ build-failing lint bars /loop from<br/>referencing eval/gold (a lint, not a sandbox)" .-> gold
+
+    classDef moat stroke:#14532d,stroke-width:2px,fill:#dcfce7;
+    class gold moat;
+```
+
+*Separation of powers — the domain owner authors the frozen gold, the platform engineer runs Bonsai in CI and reads the receipt, the agent-under-test just emits cited answers, and a build-failing CI lint bars the self-improving loop from referencing the gold it's scored against.*
+
+### (c) Adoption flow — three steps, then it compounds
+
+```mermaid
+flowchart LR
+    a["1 · Drop Bonsai on any<br/>cited-answer agent"] --> b
+    b["2 · Domain owner authors<br/>~15 gold items ONCE<br/>'what good looks like'"] --> c
+    c["3 · Run in CI"] --> d
+    subgraph forever["Self-improving rubric — forever, hands-off"]
+        d["Catch a failure"] --> e["Cluster siblings<br/>Atlas $vectorSearch"]
+        e --> f["Mint a general check<br/>is_general gate"]
+        f --> g["Grow / prune the rubric"]
+        g -. "next answer" .-> d
+    end
+    g --> h["📜 Honesty receipt every run<br/>direction + Wilson CI vs frozen gold"]
+```
+
+*Point Bonsai at any cited-answer agent, have the domain owner author ~15 gold items once, and the rubric self-improves forever — emitting an honesty receipt against a gold set a build-failing lint bars the loop from referencing.*
 
 ---
 

@@ -44,7 +44,7 @@
 
     <section class="about-block about-moat">
       <h2>The honesty rail</h2>
-      <p>The loop that writes the checks <strong>has no code path to the answer key it&rsquo;s graded against</strong> &mdash; a test fails the build if they ever touch. Improvement is reported as direction + a confidence interval, <em>never a bare&nbsp;%</em>.</p>
+      <p>A <strong>build-failing test bars the loop that writes the checks from referencing the answer key it&rsquo;s graded against</strong> &mdash; a guard against the obvious leak, not a sandbox. Improvement is reported as direction + a confidence interval, <em>never a bare&nbsp;%</em>.</p>
     </section>
 
     <section class="about-block">
@@ -53,6 +53,7 @@
     </section>
 
     <a class="btn btn--run about-cta" href="/">Watch a check get born &rarr;</a>
+    <p class="about-credit">Even the brand is Google AI: the Bonsai mark was drawn with Nano Banana and its animation with Veo &mdash; a wink, not the build; the product itself runs on Gemini&nbsp;3.5.</p>
   </main>
 </body>
 </html>
