@@ -50,6 +50,8 @@ Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, S
 
 ## 🏗️ Architecture
 
+> 📐 **Judge-Q&A walkthroughs** — *isn't this RAG?*, the honesty rail, the `is_general` gate, and the two scores — each as a one-glance diagram in **[`DIAGRAM.md`](DIAGRAM.md)**.
+
 ### Current state — built, live, and deployed
 
 ```mermaid
@@ -176,7 +178,7 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.03 ./.venv/bin/uvicorn main:app --
 ## 🏆 Prize tech callouts
 
 - **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Live and seeded** — the cluster-lineage view shows real cosine scores per sibling failure.
-- **Gemini 3.5 — powers the loop end-to-end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** (every claim card badged "Answered by Gemini 3.5" with its `[S#]` citations) **and** the **checker + grower** that rewrites the rules. The entire self-improving loop runs on Gemini, drawing GCP credit through ADC — no per-key prepay (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`).
+- **Gemini 3.5 — powers the loop end-to-end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** (every claim card badged "Answered by Gemini 3.5" with its `[S#]` citations) **and** the **checker + grower** that rewrites the rules. The entire self-improving loop runs on Gemini, drawing GCP credit through ADC — no per-key prepay (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`). **Verify the live path in one call:** `./.venv/bin/python scripts/gemini_live.py` → a real Gemini 3.5 cited answer in ~3s.
 - **DigitalOcean App Platform — deployed and live: https://bonsai-h7rzp.ondigitalocean.app/.** `deploy/Dockerfile` + a `Procfile` run `uvicorn main:app --timeout-keep-alive 75` with `/healthz` health checks and SSE that survives the LB idle timeout.
 
 ---
