@@ -39,7 +39,7 @@ Then the receipt: the minted `Check` object **in code** (with its `is_general` g
 
 ## Why it's novel
 
-To our knowledge, Bonsai is the first eval-generation system to make honesty a **build-time architectural invariant**: its autonomous, failure-clustered check-minting loop is *provably unable to read* the frozen gold set it is scored against, so every reported improvement is a direction-plus-confidence-interval against a judge the system cannot overfit to. Prior art (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, Self-Harness) *generates* evals; the wedge here is **gating the generator** — separating the improver from the judge — plus reporting improvement as direction + CI rather than a bare number.
+To our knowledge, Bonsai is the first eval-generation system to make honesty a **build-checked invariant**: its autonomous, failure-clustered check-minting loop has **no static code path to read** the frozen gold set it is scored against — a test fails the build the instant one appears — so every reported improvement is a direction-plus-confidence-interval against a reference the loop cannot fit to. Prior art (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, Self-Harness) *generates* evals; the wedge here is **gating the generator** — separating the improver from the judge — plus reporting improvement as direction + CI rather than a bare number.
 
 ---
 

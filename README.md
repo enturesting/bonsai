@@ -42,7 +42,7 @@ Two things, and the second is the wedge:
 
 That separation is the point. Lots of systems generate evals. Bonsai is the one that can **prove the improver didn't cheat** — because the improver and the judge are physically separated, and improvement is reported as a direction-plus-interval, never a bare percentage.
 
-> **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-time architectural invariant — its autonomous, failure-clustered check-minting loop is provably unable to read the frozen gold set it is scored against, so every reported improvement is a direction-plus-confidence-interval against a judge the system cannot overfit to.*
+> **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-checked invariant — its autonomous, failure-clustered check-minting loop has **no static code path to read** the frozen gold set it is scored against (a test fails the build the instant one appears), so every reported improvement is a direction-plus-confidence-interval against a reference the loop cannot fit to.*
 
 Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, Self-Harness). What's new here is *gating the generator* — see [`prior-art`](#prior-art--positioning) below.
 

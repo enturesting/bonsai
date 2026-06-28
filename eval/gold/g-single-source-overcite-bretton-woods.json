@@ -1,0 +1,27 @@
+{
+  "gold_id": "g-single-source-overcite-bretton-woods",
+  "question": "What did the 1944 Bretton Woods Conference establish, and what gold price did it fix?",
+  "reference_answer": "The 1944 Bretton Woods Conference established the International Monetary Fund and the IBRD [S1]; the cited source does not state a fixed gold price.",
+  "must_support": [
+    {
+      "claim": "The Bretton Woods Conference of 1944 established the International Monetary Fund",
+      "claim_type": "factual",
+      "supporting_quote": "The Bretton Woods Conference of 1944 established the International Monetary Fund and the International Bank for Reconstruction and Development.",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    },
+    {
+      "claim": "The Bretton Woods Conference fixed the US dollar to gold at $35 per ounce",
+      "claim_type": "numeric",
+      "supporting_quote": "The Bretton Woods Conference of 1944 established the International Monetary Fund and the International Bank for Reconstruction and Development.",
+      "source_url": "S1",
+      "category_relevant": "single-source-overcite"
+    }
+  ],
+  "must_not_assert": [
+    "Source S1 states that the Bretton Woods Conference fixed the US dollar to gold at $35 per ounce",
+    "The cited source S1 mentions a gold price or dollar-to-gold convertibility rate"
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

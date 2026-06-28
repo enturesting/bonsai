@@ -1,0 +1,27 @@
+{
+  "gold_id": "g-single-source-overcite-angel-falls",
+  "question": "How tall is Angel Falls, and when was it first officially surveyed?",
+  "reference_answer": "Angel Falls has a height of 979 metres [S1]. Its first official survey date is not established by the cited source.",
+  "must_support": [
+    {
+      "claim": "Angel Falls has a height of 979 metres",
+      "claim_type": "numeric",
+      "supporting_quote": "Angel Falls is the world's tallest uninterrupted waterfall, with a height of 979 metres (3,212 ft).",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    },
+    {
+      "claim": "Angel Falls was first officially surveyed in 1949 by a National Geographic expedition",
+      "claim_type": "factual",
+      "supporting_quote": "Angel Falls is the world's tallest uninterrupted waterfall, with a height of 979 metres (3,212 ft).",
+      "source_url": "S1",
+      "category_relevant": "single-source-overcite"
+    }
+  ],
+  "must_not_assert": [
+    "The cited source S1 establishes that Angel Falls was first officially surveyed in 1949 by a National Geographic expedition",
+    "Source S1 gives a survey or measurement date for Angel Falls"
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}
