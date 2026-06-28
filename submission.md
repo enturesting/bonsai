@@ -14,9 +14,9 @@ A self-improving eval *harness*: it watches an agent fail, mints a new check to 
 
 ## Links
 
-- **Live demo:** ‹DigitalOcean public URL — https://…›
-- **Repo (public):** ‹GitHub URL›
-- **1-min video:** ‹video URL›
+- **Live demo:** https://bonsai-h7rzp.ondigitalocean.app/
+- **Repo (public):** https://github.com/enturesting/bonsai
+- **1-min video:** ‹video URL — record Sunday AM›
 
 ---
 
@@ -31,7 +31,7 @@ It is a **harness** — a checking loop — not retrieval-augmented generation.
 On the dashboard, a column of **red** claim pills — Gemini-3.5 answers with unsupported claims. Click **Improve** on one:
 
 1. 🟡 the pill flips yellow — `CHECKING…`
-2. an Opus rule-rewrite **streams token-by-token** into the rule panel
+2. the grower's rule-rewrite (Gemini 3.5) **streams token-by-token** into the rule panel
 3. 🌱 a branch sprouts on the bonsai-tree as the check is minted
 4. 🟢 the pill flips green — the answer now passes a check that didn't exist five seconds ago
 
@@ -51,21 +51,21 @@ Atlas Vector Search is the **engine**, not a bolt-on store. `store/vectors.py` r
 
 ### $5,000 Best Gemini 3.5
 
-The agent-under-test is **Gemini 3.5**. `fixtures/gemini_client.py` calls `gemini-3.5-pro` (JSON mode) to produce cited answers strictly from candidate sources, surfacing the load-bearing claim Bonsai then checks. Every claim card in the UI is badged **"Answered by Gemini 3.5"** with its `[S#]` citations, so it's visibly Gemini doing the real work that drives the whole harness.
+**Gemini 3.5 powers the entire loop, end to end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** — `fixtures/gemini_client.py` produces cited answers (JSON mode) strictly from candidate sources, every claim card badged **"Answered by Gemini 3.5"** with its `[S#]` citations — **and** the **checker + grower** (`loop/llm.py`, `LOOP_BACKEND=gemini`) that judges the claims and rewrites the rules token-by-token. So Gemini isn't just answering: it's the self-improving engine itself. It runs on Vertex through ADC, drawing GCP credit (no per-key prepay).
 
 ### $600 Best DigitalOcean
 
-Deployed on **DigitalOcean App Platform** via `deploy/app.yaml` + `deploy/Dockerfile`: `uvicorn main:app --host 0.0.0.0 --port 8080 --timeout-keep-alive 75`, `/healthz` health check, four secret envs (`MONGODB_URI`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`, `GEMINI_API_KEY`), region near Atlas. The SSE flip survives the 75s load-balancer idle timeout (`--timeout-keep-alive 75` + sse-starlette `ping=20`). Public link: ‹URL›.
+**Deployed and live: https://bonsai-h7rzp.ondigitalocean.app/.** DigitalOcean App Platform builds the `Dockerfile` (Python 3.12) and runs it via a `Procfile`: `uvicorn main:app --port $PORT --timeout-keep-alive 75`, `/healthz` health check. It deploys **fully offline** (mock flags, no secrets) — so the public demo can't fail on anyone's network — and the SSE flip survives the LB idle timeout (`--timeout-keep-alive 75` + sse-starlette `ping=20`).
 
-### Anthropic (Claude) — the engine inside the loop
+### Anthropic (Claude) — optional, swappable loop backend
 
-Claude **Opus 4.8** grows/judges/skeptics the checks (`thinking={"type":"adaptive"}`, `output_config={"effort":"high"}`); Claude **Haiku 4.5** does the cheap first-pass checking. The deterministic→Haiku→Opus escalation keeps cost down while reserving the strong model for minting general checks.
+The loop runs on Gemini by default, but it's model-pluggable behind one seam (`loop/llm.py`): set `LOOP_BACKEND=anthropic` and the same harness runs on Claude **Opus 4.8** (grower/judge/skeptic, `thinking=adaptive` + `effort=high`) + **Haiku 4.5** (cheap first-pass checker) with a deterministic→Haiku→Opus escalation. Same loop, swappable engine.
 
 ---
 
 ## What's real vs mocked (24h, honest)
 
-The whole spine is real, incrementally-committed code: `checker → skeptic → grower/minting → pruner → eval_stream`, the htmx+SSE flip UI, Atlas/Voyage data layer, and the build-enforced honesty gate. Tests are green and the red→green flip is verified end-to-end in mock (Chrome CDP). For demo determinism and speed we run the AUT in `MOCK_AUT` mode; live Gemini, live Atlas `$vectorSearch`, and the DigitalOcean public link are wired behind real keys and a flag. The frozen gold set is authored **on-site, one commit per item**, by design — that discipline *is* the honesty rail, not a gap.
+The whole spine is real, incrementally-committed code: `checker → skeptic → grower/minting → pruner → eval_stream`, the htmx+SSE flip UI, Atlas/Voyage data layer, and the build-enforced honesty gate (**69 tests green**). And it's **live, not just wired**: the loop runs end-to-end on live Gemini 3.5 (Vertex), live Atlas `$vectorSearch` is seeded with real Voyage vectors (the lineage shows real cosine scores), and the app is **deployed on DigitalOcean**. For the *stage* demo we present the deterministic `MOCK_AUT`/mock-stream path — bulletproof, reproducible, identical on screen — with the live path as the "it's genuinely running" reveal. The frozen gold set is authored **on-site, one commit per item**, by design — that discipline *is* the honesty rail, not a gap.
 
 ## The bigger picture
 

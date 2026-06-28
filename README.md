@@ -5,6 +5,8 @@
 > Built solo in 24h at the **AI Engineer World's Fair Hackathon 2026**.
 > Not RAG. There's no retrieve-to-answer loop here — there's a *checking* loop.
 
+**🔗 Live demo (deployed on DigitalOcean App Platform): https://bonsai-h7rzp.ondigitalocean.app/** — runs fully offline (no keys), click any red claim's **Improve** to watch a check get born and the pill flip red→green.
+
 ---
 
 ## ▶️ See it in 30 seconds (no keys needed)
@@ -48,7 +50,7 @@ Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, S
 
 ## 🏗️ Architecture
 
-### Current state — built & mock-green (solid), live path pending (dashed)
+### Current state — built, live, and deployed
 
 ```mermaid
 flowchart TB
@@ -81,10 +83,10 @@ flowchart TB
     EV -. needs .-> GD
 
     classDef pending stroke-dasharray:5 5,stroke:#b45309,color:#92400e;
-    class K,AT,GM,CL,DP,GD pending;
+    class GD pending;
 ```
 
-The whole spine is real, tested code and the flip runs **today in mock**. The dashed nodes are remaining *verification / visibility / deploy* work — not core function: wire real keys → confirm live Atlas `$vectorSearch` + live Gemini, surface clustering in the UI, deploy to DigitalOcean, author the frozen gold on-site.
+**Everything except the on-site gold is now done and live:** real keys wired, live Atlas `$vectorSearch` seeded with real Voyage vectors, the **entire eval loop running on Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The flip runs both in deterministic mock (the bulletproof demo spine) and fully live. Only the frozen gold set is authored on-site — one commit per item, by design (that discipline *is* the honesty rail).
 
 ### Target state — the self-improving loop + the moat
 
@@ -121,7 +123,7 @@ The loop autonomously catches failures, clusters them by embedding (Atlas `$vect
 |---|---|
 | `/fixtures` | The agent-under-test — a **Gemini 3.5** cited-answer agent, plus `MOCK_AUT` deterministic offline path |
 | `/store` | Data layer — **MongoDB Atlas Vector Search** (`failvec`, 1024-dim cosine) + **Voyage** `voyage-3` embeddings |
-| `/loop` | The eval engine — checker (det→Haiku→Opus) → skeptic → grower/minting → pruner → `eval_stream` SSE |
+| `/loop` | The eval engine — checker → skeptic → grower/minting → pruner → `eval_stream` SSE. Runs on **Gemini 3.5 via Vertex** by default (`LOOP_BACKEND=gemini`) so the whole loop is keyless Google; or Opus 4.8 / Haiku 4.5 with an Anthropic key |
 | `/eval` | Frozen-gold scoring — Wilson CI + paired sign-test; the honesty gate's test lives here |
 | `/web` | The htmx + SSE flip UI — pill, token-streamed rule rewrite, bonsai-tree, score panel |
 
@@ -142,10 +144,17 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.03 ./.venv/bin/uvicorn main:app --
    ```bash
    MONGODB_URI=mongodb+srv://…   # MongoDB Atlas (M0 free tier also supports Vector Search)
    VOYAGE_API_KEY=…              # voyageai.com — voyage-3, 1024-dim
-   ANTHROPIC_API_KEY=…           # Opus 4.8 grower/judge · Haiku 4.5 checker
-   GEMINI_API_KEY=…              # the agent-under-test
-   MOCK_AUT=0                    # 0 = hit live Gemini 3.5 (default 1 = offline mock)
+   MOCK_AUT=0                    # 0 = live Gemini 3.5 (default 1 = offline mock)
    ```
+
+   **The whole loop runs on Gemini 3.5 via Vertex AI by default** (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`) — no Anthropic key needed, draws your GCP credit via ADC:
+
+   ```bash
+   gcloud auth application-default login          # ADC — no per-key prepay
+   export GOOGLE_CLOUD_PROJECT=your-project        # GOOGLE_CLOUD_LOCATION defaults to "global"
+   ```
+
+   *(Optional: run the loop on Opus 4.8 / Haiku 4.5 instead — set `ANTHROPIC_API_KEY` and `LOOP_BACKEND=anthropic`.)*
 
 2. Install + run:
 
@@ -166,9 +175,9 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.03 ./.venv/bin/uvicorn main:app --
 
 ## 🏆 Prize tech callouts
 
-- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example.
-- **Gemini 3.5** — the agent-under-test. `fixtures/gemini_client.py` calls `gemini-3.5-pro` to produce the cited answers Bonsai checks; every claim card is badged "Answered by Gemini 3.5" with its `[S#]` citations.
-- **DigitalOcean App Platform** — deploy target. `deploy/app.yaml` + `deploy/Dockerfile` run `uvicorn main:app --timeout-keep-alive 75` with `/healthz` health checks and SSE that survives the 75s LB idle timeout.
+- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Live and seeded** — the cluster-lineage view shows real cosine scores per sibling failure.
+- **Gemini 3.5 — powers the loop end-to-end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** (every claim card badged "Answered by Gemini 3.5" with its `[S#]` citations) **and** the **checker + grower** that rewrites the rules. The entire self-improving loop runs on Gemini, drawing GCP credit through ADC — no per-key prepay (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`).
+- **DigitalOcean App Platform — deployed and live: https://bonsai-h7rzp.ondigitalocean.app/.** `deploy/Dockerfile` + a `Procfile` run `uvicorn main:app --timeout-keep-alive 75` with `/healthz` health checks and SSE that survives the LB idle timeout.
 
 ---
 
