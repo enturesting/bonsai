@@ -12,5 +12,6 @@
     <div class="score-ci">95% CI [{{ "%.1f"|format(gold_result.ci[0] * 100) }}%, {{ "%.1f"|format(gold_result.ci[1] * 100) }}%]{% if gold_result.sign_test %} &middot; {{ gold_result.sign_test.helped }} helped, {{ gold_result.sign_test.hurt }} hurt{% endif %}</div>
   </div>
   <p class="receipt-moat"><strong>{{ gold_result.after - gold_result.before }} more held-out cases</strong> caught than the starting rubric &mdash; scored on an answer key the loop <strong>can&rsquo;t read</strong>, so the gain is real (not self-grading). Each check replaces a test a QA engineer would hand-write and maintain forever.</p>
+  <p class="receipt-rail">Enforced in CI: a build-failing test (<code>test_loop_never_references_gold_or_eval</code>) blocks the loop from referencing this gold set.</p>
 </section>
 {% endif %}

@@ -36,7 +36,7 @@ N_NEAREST = 8
 # The general INVARIANT minted per failure class — phrased over roles/types, not
 # the literal strings of any one failure (mirrors loop.grower's MINT contract).
 _PROPERTY_BY_CATEGORY = {
-    "unsupported-numeric": "Every numeric claim must cite a source whose text contains that figure (within rounding).",
+    "unsupported-numeric": "Every numeric claim must cite a source whose text contains that figure.",
     "fabricated-quote": "Every quoted span must appear verbatim in the text of a cited source.",
     "stale-wrong-citation": "Each citation must point to a source whose text actually supports the claim.",
     "single-source-overcite": "A source may be cited only for the claims its text genuinely supports.",

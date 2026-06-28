@@ -42,7 +42,7 @@ Two things, and the second is the wedge:
 
 That separation is the point. Lots of systems generate evals. Bonsai is the one that can **prove the improver didn't cheat** — because the improver and the judge are physically separated, and improvement is reported as a direction-plus-interval, never a bare percentage.
 
-> **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-checked invariant — its autonomous, failure-clustered check-minting loop has **no static code path to read** the frozen gold set it is scored against (a test fails the build the instant one appears), so every reported improvement is a direction-plus-confidence-interval against a reference the loop cannot fit to.*
+> **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-checked discipline — a CI test fails the build if its autonomous, failure-clustered check-minting loop ever references the frozen gold set it is scored against (`import eval`, `eval/gold`, `load_gold`), so every reported improvement is a direction-plus-confidence-interval against a reference the loop has no naive path to fit to.*
 
 Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, Self-Harness). What's new here is *gating the generator* — see [`prior-art`](#prior-art--positioning) below.
 
@@ -94,7 +94,7 @@ flowchart TB
     class GD pending;
 ```
 
-**Everything except the on-site gold is now done and live:** real keys wired, live Atlas `$vectorSearch` seeded with real Voyage vectors, the **entire eval loop running on Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The flip runs both in deterministic mock (the bulletproof demo spine) and fully live. Only the frozen gold set is authored on-site — one commit per item, by design (that discipline *is* the honesty rail).
+**Built, wired, and deployed:** real keys wired, Atlas `$vectorSearch` indexed (`failvec`) and seeded with real Voyage vectors, the **eval loop wired to Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed; the AUT is **verified live** via `scripts/gemini_live.py`), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The recorded demo runs the deterministic mock (the bulletproof spine); the live path is verifiable via the gated `RUN_ATLAS_IT` integration test and a live `/web`. The frozen gold set is authored on-site — one commit per item, by design (that discipline *is* the honesty rail).
 
 ### Target state — the self-improving loop + the moat
 
@@ -183,7 +183,7 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.06 ./.venv/bin/uvicorn main:app --
 
 ## 🏆 Prize tech callouts
 
-- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Live and seeded** — the cluster-lineage view shows real cosine scores per sibling failure.
+- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Wired, indexed and seeded** — `nearest_failures_scored` returns true `vectorSearchScore`; verify live via the gated `RUN_ATLAS_IT` test (the recorded demo renders the labeled `offline mock` cluster).
 - **Gemini 3.5 — powers the loop end-to-end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** (every claim card badged "Answered by Gemini 3.5" with its `[S#]` citations) **and** the **checker + grower** that rewrites the rules. The entire self-improving loop runs on Gemini, drawing GCP credit through ADC — no per-key prepay (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`). **Verify the live path in one call:** `./.venv/bin/python scripts/gemini_live.py` → a real Gemini 3.5 cited answer in ~3s.
 - **DigitalOcean App Platform — deployed and live: https://bonsai-h7rzp.ondigitalocean.app/.** `deploy/Dockerfile` + a `Procfile` run `uvicorn main:app --timeout-keep-alive 75` with `/healthz` health checks and SSE that survives the LB idle timeout.
 

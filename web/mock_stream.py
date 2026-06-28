@@ -24,7 +24,7 @@ from eval.scoring import wilson
 _RULE_LADDER = {
     "unsupported-numeric": [
         "Numbers in an answer should look supported.",
-        "Numeric claims must cite a source whose text contains the same figure, within rounding.",
+        "Numeric claims must cite a source whose text contains the same figure.",
         "Every numeric promise must match the figure in the cited source span exactly, rounding only where the source rounds.",
     ],
     "fabricated-quote": [
