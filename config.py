@@ -34,7 +34,10 @@ class Settings(BaseSettings):
 
     # ── Gemini AUT ─────────────────────────────────────────────────────
     gemini_api_key: str = Field("", env="GEMINI_API_KEY")
-    gemini_model: str = Field("gemini-3.5-flash", env="GEMINI_MODEL")  # AUT model id (gemini-3.5-pro 404s on this API; 3.5-flash is the available 3.5 model)
+    gemini_backend: str = Field("vertex", env="GEMINI_BACKEND")  # "vertex" (ADC, draws GCP credit) | "aistudio" (API key)
+    google_cloud_project: str = Field("gen-lang-client-0193921722", env="GOOGLE_CLOUD_PROJECT")
+    google_cloud_location: str = Field("global", env="GOOGLE_CLOUD_LOCATION")  # gemini-3.5-flash on Vertex lives in "global"
+    gemini_model: str = Field("gemini-3.5-flash", env="GEMINI_MODEL")  # AUT model id (Gemini 3.5; the $5k-prize model)
     mock_aut: bool = Field(True, env="MOCK_AUT")  # 1 = deterministic offline AUT (no Gemini call)
 
     class Config:

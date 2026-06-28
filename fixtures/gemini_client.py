@@ -44,19 +44,39 @@ def _build_prompt(question: str, candidate_sources: "list[Source]") -> str:
     )
 
 
-def gemini_answer(question: str, candidate_sources: "list[Source]") -> AUTOutput:
-    """Call Gemini 3.5 over one question + candidate sources -> cited AUTOutput.
+def _answer_text(cfg, question: str, candidate_sources: "list[Source]") -> str:
+    """Drive the configured Gemini backend; return the raw JSON response text.
 
-    PRIVATE. The returned AUTOutput.sources are the *cited* candidate sources (full
-    text preserved) so deterministic checks can match verbatim quotes against them.
-    Raises if GEMINI_API_KEY is unset — callers gate this behind the MOCK_AUT flag.
+    GEMINI_BACKEND=vertex (default): google-genai over Vertex AI using ADC — draws the
+    GCP project's credit, no per-key prepay, and serves the Gemini 3.5 model from the
+    `global` location. GEMINI_BACKEND=aistudio: the legacy API-key path (needs GEMINI_API_KEY).
     """
-    cfg = get_settings()
+    prompt = _build_prompt(question, candidate_sources)
+
+    if cfg.gemini_backend == "vertex":
+        from google import genai  # google-genai unified SDK (lazy import)
+        from google.genai import types
+
+        client = genai.Client(
+            vertexai=True,
+            project=cfg.google_cloud_project,
+            location=cfg.google_cloud_location,
+        )
+        resp = client.models.generate_content(
+            model=cfg.gemini_model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=_SYSTEM,
+                response_mime_type="application/json",
+            ),
+        )
+        return resp.text
+
+    # aistudio (API-key) fallback
     if not cfg.gemini_api_key:
         raise RuntimeError(
-            "GEMINI_API_KEY is empty; set it or run with MOCK_AUT=1 for the offline AUT."
+            "GEMINI_API_KEY is empty; set it, use GEMINI_BACKEND=vertex, or run MOCK_AUT=1."
         )
-
     import google.generativeai as genai  # imported lazily so the package loads keyless
 
     genai.configure(api_key=cfg.gemini_api_key)
@@ -65,8 +85,19 @@ def gemini_answer(question: str, candidate_sources: "list[Source]") -> AUTOutput
         system_instruction=_SYSTEM,
         generation_config={"response_mime_type": "application/json"},
     )
-    resp = model.generate_content(_build_prompt(question, candidate_sources))
-    data = json.loads(resp.text)
+    return model.generate_content(prompt).text
+
+
+def gemini_answer(question: str, candidate_sources: "list[Source]") -> AUTOutput:
+    """Call Gemini 3.5 over one question + candidate sources -> cited AUTOutput.
+
+    PRIVATE. The returned AUTOutput.sources are the *cited* candidate sources (full
+    text preserved) so deterministic checks can match verbatim quotes against them.
+    Backend is selected by GEMINI_BACKEND (vertex default); callers still gate the
+    whole call behind the MOCK_AUT flag for the offline path.
+    """
+    cfg = get_settings()
+    data = json.loads(_answer_text(cfg, question, candidate_sources))
 
     by_id = {s.id: s for s in candidate_sources}
     cited = [by_id[cid] for cid in data.get("citations", []) if cid in by_id]

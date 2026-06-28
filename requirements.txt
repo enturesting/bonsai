@@ -20,7 +20,9 @@ dnspython==2.7.0
 # Voyage embeddings
 voyageai==0.3.2
 
-# Gemini AUT (swap to google-genai if Gemini 3.5 / Antigravity needs the newer SDK)
+# Gemini AUT — Vertex backend (default, GEMINI_BACKEND=vertex) via google-genai (Gemini 3.5, draws GCP credit via ADC);
+# aistudio key path retained via google-generativeai.
+google-genai==1.47.0
 google-generativeai==0.8.3
 
 # Utilities
