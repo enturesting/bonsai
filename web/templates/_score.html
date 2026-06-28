@@ -1,6 +1,6 @@
 <section class="panel score-panel">
   <h2>Score <span class="hint">counts + Wilson 95% CI</span></h2>
-  <div class="receipt-eyebrow">honesty receipt · greens minted</div>
+  <div class="receipt-eyebrow">working pool · greens before &rarr; after</div>
   <div id="score-display" class="score-display"
        data-before="{{ score.before }}" data-after="{{ score.after }}" data-n="{{ score.n }}">
     <div class="score-counts">
@@ -11,5 +11,5 @@
     </div>
     <div class="score-ci">95% CI [{{ "%.1f"|format(score.ci[0] * 100) }}%, {{ "%.1f"|format(score.ci[1] * 100) }}%]</div>
   </div>
-  <p class="receipt-moat">scored against a <strong>frozen gold set</strong> the improving loop can&rsquo;t read — <em>enforced by a build-failing test, not promised</em></p>
+  <p class="receipt-moat">these are the <strong>working-pool</strong> greens the loop optimizes. The rubric is <em>separately</em> graded against a <strong>frozen gold set the loop has no code path to read</strong> — a build-failing test enforces it.</p>
 </section>
