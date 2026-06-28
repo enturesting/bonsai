@@ -15,6 +15,8 @@
     <span class="lineage-src">{{ "live Atlas" if lineage.source == "atlas" else "offline mock" }}</span>
   </div>
 
+  <p class="lineage-summary"><strong>What just happened:</strong> Bonsai caught this failure, found {{ lineage.k }} like it by <em>meaning</em> (Atlas vector search), and minted <strong>one</strong> check for the whole family &mdash; then proved it still passes every good answer.</p>
+
   {# 1 — the seed failure the grower started from #}
   <div class="lin-node lin-seed">
     <div class="lin-kind">seed failure</div>
@@ -55,6 +57,7 @@
       {% else %}
         <span class="lin-fail">✗ not general</span> — caught only {{ v.caught_siblings }} sibling{{ '' if v.caught_siblings == 1 else 's' }} (gate needs ≥2)
       {% endif %}
+      <div class="lin-plain">in plain terms: it catches the whole <em>family</em> of this mistake, not just this one claim.</div>
     </div>
   </div>
 </div>

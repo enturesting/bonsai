@@ -88,6 +88,22 @@ if (typeof document !== "undefined") {
         { target: "#lineage", swap: "innerHTML" });
     }
   });
+
+  // 4. example chips: one click fills the Live Claim form (claim + source + class)
+  // so the on-stage "now you type one" beat never has to improvise a fitting claim.
+  document.body.addEventListener("click", function (evt) {
+    var chip = evt.target && evt.target.closest ? evt.target.closest(".ex-chip") : null;
+    if (!chip) return;
+    var form = chip.closest(".live-claim");
+    if (!form) return;
+    var claim = form.querySelector('[name="claim"]');
+    var source = form.querySelector('[name="source"]');
+    var cat = form.querySelector('[name="category"]');
+    if (claim) claim.value = chip.getAttribute("data-claim") || "";
+    if (source) source.value = chip.getAttribute("data-source") || "";
+    if (cat) cat.value = chip.getAttribute("data-cat") || cat.value;
+    if (claim) claim.focus();
+  });
 }
 
 // ---- node export (no-op in the browser) ----------------------------------

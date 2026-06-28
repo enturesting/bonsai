@@ -41,15 +41,30 @@
         <textarea name="source" rows="2"
                   placeholder="Paste the source text it cited (optional)…"></textarea>
         <div class="live-claim-row">
-          <select name="category" aria-label="failure class">
-            <option value="unsupported-numeric">unsupported-numeric</option>
-            <option value="fabricated-quote">fabricated-quote</option>
-            <option value="stale-wrong-citation">stale-wrong-citation</option>
-            <option value="single-source-overcite">single-source-overcite</option>
-            <option value="vague-not-checkable">vague-not-checkable</option>
-            <option value="clean">clean (well-supported)</option>
+          <select name="category" aria-label="what kind of claim this is">
+            <option value="unsupported-numeric">Invented number / wrong figure</option>
+            <option value="fabricated-quote">Made-up quote or clause</option>
+            <option value="stale-wrong-citation">Stale or wrong citation</option>
+            <option value="single-source-overcite">Over-cited source</option>
+            <option value="vague-not-checkable">Too vague to check</option>
+            <option value="clean">Clean &mdash; well-supported</option>
           </select>
           <button type="submit" class="btn btn--run">Add claim &rarr;</button>
+        </div>
+        <div class="live-examples">
+          <span class="live-examples-label">or load an example:</span>
+          <button type="button" class="ex-chip"
+            data-claim="Customer data is encrypted at rest using AES-256 and in transit using TLS 1.2 or higher."
+            data-source="All customer data is encrypted at rest using AES-256 and in transit using TLS 1.2 or higher."
+            data-cat="clean">clean answer &check;</button>
+          <button type="button" class="ex-chip"
+            data-claim="Northbeam runs third-party penetration tests every 30 days."
+            data-source="An independent third party performs penetration testing of the production environment at least annually."
+            data-cat="unsupported-numeric">invented number</button>
+          <button type="button" class="ex-chip"
+            data-claim="Our DPA includes a zero-data-retention guarantee &mdash; Northbeam never stores customer data."
+            data-source="Northbeam processes customer personal data only on documented instructions and deletes it within 30 days of termination."
+            data-cat="fabricated-quote">made-up clause</button>
         </div>
       </form>
 

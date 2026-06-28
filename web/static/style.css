@@ -223,11 +223,33 @@ body {
   border: 1px solid var(--line-strong);
   border-radius: 9px;
 }
+/* one-click example chips — fill the form so the live beat never improvises */
+.live-examples { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.1rem; }
+.live-examples-label { font-size: 0.74rem; color: var(--muted); }
+.ex-chip {
+  font: inherit; font-size: 0.74rem; cursor: pointer;
+  padding: 0.2rem 0.6rem; border-radius: 999px;
+  color: var(--forest-deep); background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  transition: border-color 0.15s, background 0.15s;
+}
+.ex-chip:hover { border-color: var(--forest-bright); background: var(--gold-soft); }
 
 /* clean-claim lineage — the "cleared a false positive, nothing to mint" card */
 .lineage--clean { border-left: 3px solid var(--green-line); }
 .lineage-clean { margin: 0.5rem 0 0.4rem; font-size: 0.84rem; color: var(--ink-soft); }
 .lineage--clean .lineage-title { color: var(--green); }
+
+/* plain-language takeaway lines on the cluster lineage (the "what it means" view) */
+.lineage-summary {
+  margin: 0.55rem 0 0.2rem; padding: 0.5rem 0.7rem;
+  font-size: 0.82rem; line-height: 1.4; color: var(--ink-soft);
+  background: var(--paper-3); border-radius: 9px;
+}
+.lineage-summary strong { color: var(--forest-deep); }
+.lineage-summary em { font-style: normal; color: var(--gold); font-weight: 600; }
+.lin-plain { margin-top: 4px; font-size: 0.74rem; color: var(--muted); }
+.lin-plain em { font-style: normal; color: var(--forest-bright); font-weight: 600; }
 
 /* ---- rubric panel: maturity meter + living checklist (Move #4) ------------ */
 .maturity { margin: 0 0 14px; }
