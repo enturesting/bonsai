@@ -16,6 +16,7 @@
   </div>
 
   <p class="lineage-summary"><strong>What just happened:</strong> Bonsai caught this failure, used Atlas vector search to pull its <em>{{ lineage.k }} nearest past failures</em>, and minted <strong>one</strong> general check for that kind of mistake &mdash; then verified it still passes every good answer.</p>
+  {% if lineage.forward %}<p class="lineage-forward"><span class="forward-tag">What it means next</span> {{ lineage.forward }}</p>{% endif %}
 
   {# 1 — the seed failure the grower started from #}
   <div class="lin-node lin-seed">

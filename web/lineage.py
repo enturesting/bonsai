@@ -44,6 +44,21 @@ _PROPERTY_BY_CATEGORY = {
 }
 _DEFAULT_PROPERTY = "Each claim must be backed by a verbatim span in a cited source."
 
+# Plain-language "what this buys you going forward" — the value of the minted check,
+# stated as what it now PREVENTS on the next answer (per failure family).
+_FORWARD_BY_CATEGORY = {
+    "unsupported-numeric": "Every figure Verity states now has to appear in its cited source — the next invented number is caught before a customer sees it.",
+    "fabricated-quote": "Every clause Verity quotes now has to appear verbatim in its cited source — the next made-up guarantee is caught before a customer sees it.",
+    "stale-wrong-citation": "Verity's citation now has to actually support the claim and be the current document — the next stale or wrong citation is caught.",
+    "single-source-overcite": "A source now only backs the specific claims its text supports — the next over-cited document is caught.",
+    "vague-not-checkable": "An answer now has to be specific enough to check against a source span — the next vague hand-wave is caught.",
+}
+_DEFAULT_FORWARD = "This kind of unsupported claim is now caught before a customer sees it."
+
+
+def _forward_for(q: dict) -> str:
+    return _FORWARD_BY_CATEGORY.get(q.get("category", ""), _DEFAULT_FORWARD)
+
 
 def _resolve(claim_id: str, questions: list) -> dict:
     return next(
@@ -156,6 +171,7 @@ async def mock_cluster_lineage(claim_id: str) -> dict:
         "k": len(cluster),
         "minted": {"id": _minted_id(q), "property": _property_for(q)},
         "verdict": verdict,
+        "forward": _forward_for(q),
         "source": "mock",
     }
 
@@ -219,6 +235,7 @@ async def real_cluster_lineage(claim_id: str) -> dict:
             "caught_siblings": len(cluster),
             "n_known_good": None,
         },
+        "forward": _forward_for(q),
         "source": "atlas",
     }
 

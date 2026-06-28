@@ -251,6 +251,18 @@ body {
 .lin-plain { margin-top: 4px; font-size: 0.74rem; color: var(--muted); }
 .lin-plain em { font-style: normal; color: var(--forest-bright); font-weight: 600; }
 
+/* the forward-looking value line — what the harness now PREVENTS on the next answer */
+.lineage-forward {
+  margin: 0.4rem 0 0.2rem; padding: 0.5rem 0.7rem;
+  font-size: 0.82rem; line-height: 1.4; color: var(--forest-deep);
+  background: var(--green-soft); border-radius: 9px;
+}
+.forward-tag {
+  display: inline-block; margin-right: 0.4rem;
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--forest-bright);
+}
+
 /* ---- rubric panel: maturity meter + living checklist (Move #4) ------------ */
 .maturity { margin: 0 0 14px; }
 .maturity-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
