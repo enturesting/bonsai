@@ -166,12 +166,12 @@ async def real_cluster_lineage(claim_id: str) -> dict:
     q = _resolve(claim_id, questions)
     seed_text = (q.get("mock") or {}).get("claim") or q.get("question") or claim_id
 
-    cluster_failures = await store.nearest_failures(seed_text, db, limit=N_NEAREST)
+    scored = await store.nearest_failures_scored(seed_text, db, limit=N_NEAREST)
     minted_check = await loop.grow(_seed_check(q, seed_text), db)
 
     cluster = [
-        {"rank": i, "id": f.id, "why": f.why or "failure", "similarity": None}
-        for i, f in enumerate(cluster_failures, start=1)
+        {"rank": i, "id": f.id, "why": f.why or "failure", "similarity": sim}
+        for i, (f, sim) in enumerate(scored, start=1)
     ]
     is_general = minted_check is not None
     minted = {

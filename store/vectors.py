@@ -91,3 +91,38 @@ async def nearest_failures(
     ]
     docs = await failures_collection(db).aggregate(pipeline).to_list(length=limit)
     return [Failure(**from_doc(d)) for d in docs]
+
+
+async def nearest_failures_scored(
+    seed_text: str,
+    db: "AsyncIOMotorDatabase",
+    *,
+    limit: int = 12,
+    num_candidates: int = 200,
+) -> list[tuple[Failure, float | None]]:
+    """Like `nearest_failures`, but also returns each hit's Atlas `$vectorSearch`
+    cosine score (0..1) so the lineage view can show REAL similarity, not synthetic.
+
+    Adds `{$meta: "vectorSearchScore"}` to the pipeline — the one extra projection
+    that makes the vector clustering legible in the UI.
+    """
+    cfg = get_settings()
+    qv = embed_query(seed_text)
+    pipeline = [
+        {
+            "$vectorSearch": {
+                "index": cfg.atlas_vector_index,
+                "path": "embedding",
+                "queryVector": qv,
+                "numCandidates": num_candidates,
+                "limit": limit,
+            }
+        },
+        {"$addFields": {"_score": {"$meta": "vectorSearchScore"}}},
+    ]
+    docs = await failures_collection(db).aggregate(pipeline).to_list(length=limit)
+    out: list[tuple[Failure, float | None]] = []
+    for d in docs:
+        score = d.pop("_score", None)
+        out.append((Failure(**from_doc(d)), round(float(score), 2) if score is not None else None))
+    return out

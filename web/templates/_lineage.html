@@ -18,12 +18,13 @@
   {# 2 — the N nearest failures Atlas $vectorSearch returned, similarity order #}
   <div class="lin-node lin-cluster">
     <div class="lin-kind">cluster of {{ lineage.k }} — Atlas $vectorSearch</div>
+    <div class="lin-meta">MongoDB Atlas Vector Search · index <code>failvec</code> · voyage-3 · 1024-dim · cosine</div>
     <ol class="lin-list">
       {% for c in lineage.cluster %}
       <li class="lin-hit">
         <span class="lin-rank">#{{ c.rank }}</span>
+        {% if c.similarity is not none %}<span class="lin-sim" title="cosine similarity ({{ lineage.source }})">{{ "%.2f"|format(c.similarity) }}</span>{% else %}<span class="lin-sim lin-sim--na" title="score unavailable">·</span>{% endif %}
         <span class="lin-hit-id">{{ c.id }}</span>
-        {% if c.similarity is not none %}<span class="lin-sim">{{ "%.2f"|format(c.similarity) }}</span>{% endif %}
         <span class="lin-hit-why">{{ c.why }}</span>
       </li>
       {% endfor %}

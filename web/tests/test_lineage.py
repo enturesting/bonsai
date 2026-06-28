@@ -128,13 +128,13 @@ def test_lineage_real_path_uses_store_and_loop(client, monkeypatch):
 
     calls = {"nearest": 0, "grow": 0}
 
-    async def fake_nearest(seed_text, db, *, limit=12, num_candidates=200):
+    async def fake_nearest_scored(seed_text, db, *, limit=12, num_candidates=200):
         calls["nearest"] += 1
         return [
-            Failure(id="atlas-fail-1", input="i", claim="c", expected="e",
-                    actual="a", why="bad citation 1"),
-            Failure(id="atlas-fail-2", input="i", claim="c", expected="e",
-                    actual="a", why="bad citation 2"),
+            (Failure(id="atlas-fail-1", input="i", claim="c", expected="e",
+                     actual="a", why="bad citation 1"), 0.91),
+            (Failure(id="atlas-fail-2", input="i", claim="c", expected="e",
+                     actual="a", why="bad citation 2"), 0.84),
         ]
 
     async def fake_grow(worst_check, db):
@@ -144,7 +144,7 @@ def test_lineage_real_path_uses_store_and_loop(client, monkeypatch):
                      overfit_risk="o")
 
     monkeypatch.setattr(store, "get_db", lambda: object())
-    monkeypatch.setattr(store, "nearest_failures", fake_nearest)
+    monkeypatch.setattr(store, "nearest_failures_scored", fake_nearest_scored)
     monkeypatch.setattr(loop, "grow", fake_grow)
 
     body = client.get("/tree/numeric-mismatch-01").text
@@ -152,3 +152,5 @@ def test_lineage_real_path_uses_store_and_loop(client, monkeypatch):
     assert "atlas-fail-1" in body and "atlas-fail-2" in body
     assert "minted-general" in body
     assert "Atlas $vectorSearch" in body
+    # the REAL $vectorSearch cosine score is surfaced (not None) in the live path.
+    assert "0.91" in body

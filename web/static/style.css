@@ -526,14 +526,21 @@ body {
 
 .lin-seed { border-left: 3px solid var(--red-line); }
 .lin-cluster { border-left: 3px solid var(--gold-bright); }
+.lin-meta {
+  font-family: var(--font-mono); font-size: 0.62rem; color: var(--forest-bright);
+  margin-top: 0.18rem; letter-spacing: 0.2px;
+}
+.lin-meta code { color: var(--gold); font-weight: 600; }
 .lin-list { list-style: none; margin: 0.35rem 0 0; padding: 0; display: grid; gap: 0.25rem; }
 .lin-hit { display: flex; align-items: baseline; gap: 0.4rem; font-size: 0.78rem; }
 .lin-rank { font-family: var(--font-mono); color: var(--muted); }
 .lin-hit-id { font-family: var(--font-mono); color: var(--forest); }
 .lin-sim {
-  font-family: var(--font-mono); font-size: 0.68rem; color: var(--gold);
-  background: var(--gold-soft); border-radius: 5px; padding: 0 0.28rem;
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; color: var(--gold);
+  background: var(--gold-soft); border-radius: 5px; padding: 0 0.3rem;
+  min-width: 2.1rem; text-align: center;
 }
+.lin-sim--na { color: var(--muted); background: transparent; font-weight: 400; }
 .lin-hit-why { color: var(--muted); font-style: italic; }
 
 .lin-minted { border-left: 3px solid var(--green); }

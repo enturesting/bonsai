@@ -9,7 +9,7 @@ from store.client import get_db
 from store.embed import embed, embed_one, embed_query
 from store.failures import known_good_sample, save_failure
 from store.models import EMBED_DIM, AUTOutput, Check, Failure, Source, Verdict
-from store.vectors import ensure_index, nearest_failures
+from store.vectors import ensure_index, nearest_failures, nearest_failures_scored
 
 __all__ = [
     # connection
@@ -21,6 +21,7 @@ __all__ = [
     # index + retrieval
     "ensure_index",
     "nearest_failures",
+    "nearest_failures_scored",
     # failures + known-good
     "save_failure",
     "known_good_sample",
