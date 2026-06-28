@@ -15,7 +15,7 @@
     <span class="lineage-src">{{ "live Atlas" if lineage.source == "atlas" else "offline mock" }}</span>
   </div>
 
-  <p class="lineage-summary"><strong>What just happened:</strong> Bonsai caught this failure, found {{ lineage.k }} like it by <em>meaning</em> (Atlas vector search), and minted <strong>one</strong> check for the whole family &mdash; then proved it still passes every good answer.</p>
+  <p class="lineage-summary"><strong>What just happened:</strong> Bonsai caught this failure, used Atlas vector search to pull its <em>{{ lineage.k }} nearest past failures</em>, and minted <strong>one</strong> general check for that kind of mistake &mdash; then verified it still passes every good answer.</p>
 
   {# 1 — the seed failure the grower started from #}
   <div class="lin-node lin-seed">
