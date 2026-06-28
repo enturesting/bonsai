@@ -1,0 +1,27 @@
+{
+  "id": "secq-clean-subprocessors-01",
+  "category": "clean",
+  "question": "Do you use sub-processors, and are customers notified before changes?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam DPA 6.1 - Sub-processors",
+      "url": "https://trust.northbeam.com/dpa#subprocessors",
+      "text": "Northbeam may engage third-party sub-processors to process customer personal data in connection with the services."
+    },
+    {
+      "id": "S2",
+      "title": "Northbeam DPA 6.3 - Sub-processor Change Notice",
+      "url": "https://trust.northbeam.com/dpa#subprocessor-notice",
+      "text": "Northbeam provides at least 30 days' advance notice before adding or replacing a sub-processor."
+    }
+  ],
+  "mock": {
+    "claim": "Northbeam uses sub-processors and gives at least 30 days' advance notice before adding or replacing one.",
+    "output": "Northbeam may engage sub-processors to process customer data [S1], and provides at least 30 days' advance notice before adding or replacing a sub-processor [S2].",
+    "cite_ids": [
+      "S1",
+      "S2"
+    ]
+  }
+}

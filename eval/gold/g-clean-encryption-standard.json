@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-clean-encryption-standard",
+  "question": "What encryption does Northbeam use for customer data at rest?",
+  "reference_answer": "Northbeam encrypts customer data at rest using the AES-256 algorithm [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam encrypts customer data at rest using the AES-256 algorithm.",
+      "claim_type": "factual",
+      "supporting_quote": "All customer data is encrypted at rest using the AES-256 algorithm and in transit using TLS 1.2 or higher.",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam encrypts customer data at rest using 512-bit AES.",
+    "Customer data is stored unencrypted."
+  ],
+  "expected_verdict": "pass",
+  "frozen": true
+}

@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-clean-breach-notification",
+  "question": "Within how long does Northbeam notify customers of a personal data breach?",
+  "reference_answer": "Northbeam notifies affected customers of a personal data breach within 72 hours of becoming aware of it [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam notifies affected customers of a personal data breach within 72 hours of becoming aware of it.",
+      "claim_type": "numeric",
+      "supporting_quote": "Northbeam will notify affected customers without undue delay and in any event within 72 hours of becoming aware of a personal data breach.",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam has 30 days to notify customers of a breach.",
+    "Northbeam is not obligated to notify customers of breaches."
+  ],
+  "expected_verdict": "pass",
+  "frozen": true
+}

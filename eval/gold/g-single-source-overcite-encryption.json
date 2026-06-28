@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-single-source-overcite-encryption",
+  "question": "What does Northbeam's encryption standard establish about protecting customer data?",
+  "reference_answer": "Northbeam's encryption standard establishes AES-256 encryption at rest [S1]; it does not by itself establish access-control or monitoring practices.",
+  "must_support": [
+    {
+      "claim": "Northbeam's encryption standard establishes role-based access controls and continuous security monitoring in addition to encryption at rest.",
+      "claim_type": "factual",
+      "supporting_quote": "All customer data is encrypted at rest using the AES-256 algorithm.",
+      "source_url": "S1",
+      "category_relevant": "single-source-overcite"
+    }
+  ],
+  "must_not_assert": [
+    "The cited encryption standard S1 establishes role-based access controls.",
+    "Source S1 addresses continuous security monitoring."
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

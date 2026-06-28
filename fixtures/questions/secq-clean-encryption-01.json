@@ -1,0 +1,20 @@
+{
+  "id": "secq-clean-encryption-01",
+  "category": "clean",
+  "question": "How is customer data encrypted, at rest and in transit?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Encryption Standard - ENC-STD-01",
+      "url": "https://trust.northbeam.com/encryption-standard",
+      "text": "All customer data is encrypted at rest using AES-256 and in transit using TLS 1.2 or higher."
+    }
+  ],
+  "mock": {
+    "claim": "Customer data is encrypted at rest with AES-256 and in transit with TLS 1.2 or higher.",
+    "output": "All customer data is encrypted at rest using AES-256 and in transit using TLS 1.2 or higher [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  }
+}

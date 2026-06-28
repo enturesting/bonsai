@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-stale-wrong-citation-dpa-version",
+  "question": "Which Data Processing Addendum governs Northbeam's current customer agreements?",
+  "reference_answer": "Northbeam's current Data Processing Addendum governs how it processes customer personal data [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam's current Data Processing Addendum governs how it processes customer personal data.",
+      "claim_type": "factual",
+      "supporting_quote": "This Data Processing Addendum, version 1.0 dated 2019, sets out the terms under which the provider processes customer personal data.",
+      "source_url": "S1",
+      "category_relevant": "stale-wrong-citation"
+    }
+  ],
+  "must_not_assert": [
+    "The cited source S1 is Northbeam's current Data Processing Addendum.",
+    "The 2019 version 1.0 DPA reflects Northbeam's current processing terms."
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

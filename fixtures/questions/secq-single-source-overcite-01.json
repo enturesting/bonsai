@@ -1,0 +1,22 @@
+{
+  "id": "secq-single-source-overcite-01",
+  "category": "single-source-overcite",
+  "question": "What controls protect customer data at Northbeam?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Encryption Standard - ENC-STD-01",
+      "url": "https://trust.northbeam.com/encryption-standard",
+      "text": "All customer data is encrypted at rest using AES-256."
+    }
+  ],
+  "mock": {
+    "claim": "Customer data is protected by AES-256 encryption, role-based access controls, and 24/7 SOC monitoring.",
+    "output": "Customer data is protected by AES-256 encryption [S1], role-based access controls [S1], and 24/7 SOC monitoring [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "S1 supports only the AES-256 encryption claim; the distinct role-based-access and 24/7-monitoring claims each require their own supporting source.",
+  "why": "A single source (S1), which covers only encryption at rest, is cited to carry three distinct controls - role-based access and 24/7 monitoring have no supporting span in the cited source."
+}

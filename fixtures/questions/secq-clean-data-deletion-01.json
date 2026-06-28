@@ -1,0 +1,20 @@
+{
+  "id": "secq-clean-data-deletion-01",
+  "category": "clean",
+  "question": "How quickly is customer data deleted after a customer terminates the agreement?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Data Retention Policy - DRP-02",
+      "url": "https://trust.northbeam.com/data-retention",
+      "text": "Upon termination of the agreement, customer data is deleted within 30 days."
+    }
+  ],
+  "mock": {
+    "claim": "Customer data is deleted within 30 days of contract termination.",
+    "output": "Upon termination, Northbeam deletes customer data within 30 days [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  }
+}

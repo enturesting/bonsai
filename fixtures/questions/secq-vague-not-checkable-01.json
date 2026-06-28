@@ -1,0 +1,22 @@
+{
+  "id": "secq-vague-not-checkable-01",
+  "category": "vague-not-checkable",
+  "question": "Is customer data secure at Northbeam?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Information Security Policy - ISP-01 (Data Protection)",
+      "url": "https://trust.northbeam.com/infosec-policy#data",
+      "text": "Customer data is encrypted at rest with AES-256, access is restricted on a role basis, and all access is logged and monitored continuously."
+    }
+  ],
+  "mock": {
+    "claim": "Yeah, customer data is generally pretty secure overall.",
+    "output": "Yeah, customer data is generally pretty secure overall [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "A supported answer would name the concrete controls the source states: AES-256 encryption at rest, role-based access restriction, and continuous access logging/monitoring.",
+  "why": "Claim is too vague to verify against any source span ('generally pretty secure'); the cited source states specific, checkable controls instead."
+}

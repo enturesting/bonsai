@@ -140,6 +140,28 @@ body {
 }
 .hero-line strong { color: var(--forest-deep); font-weight: 700; }
 
+/* scenario strip — gives the enterprise demo a face (Verity @ Northbeam) */
+.scenario-line {
+  margin: 0;
+  padding: 0.5rem 1.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.scenario-line strong { color: var(--forest-deep); font-weight: 600; }
+.scenario-tag {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-right: 0.4rem;
+  vertical-align: 0.05em;
+}
+
 /* the moat, made visible on the honesty receipt */
 .receipt-moat {
   margin: 0.85rem 0 0;
@@ -260,7 +282,13 @@ body {
 .claim:has(.pill--green) { border-left-color: var(--green); }
 .claim:has(.pill--yellow) { border-left-color: var(--amber); }
 .claim:has(.pill--red) { border-left-color: var(--red-line); }
-.claim-head { display: flex; align-items: center; justify-content: space-between; gap: 0.85rem; }
+.claim-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.85rem; }
+/* resting: the category chip + status pill share the header row; on a narrow card
+   the pill wraps to its own line instead of clipping at the viewport edge. once an
+   Improve stream swaps the full console into the slot, the slot breaks to a
+   full-width row below the header so the dark rule-box is never crammed into a
+   content-sized header cell. */
+.improve-slot:has(.improve) { flex-basis: 100%; margin-top: 0.5rem; }
 .claim-cat {
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -547,7 +575,11 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bonsai, .pill--yellow, .rule-label::before, .rule-stream::after { animation: none !important; }
+  .bonsai, .pill--yellow, .rule-label::before, .rule-stream::after,
+  .branch--new, .leaf--new, .leaf-pad--new, .lineage, .score-bump { animation: none !important; }
+  /* the branch's resting state is invisible (stroke-dashoffset: 70 draws nothing);
+     killing its draw animation alone would erase the centerpiece — show it fully drawn. */
+  .branch--new { stroke-dashoffset: 0 !important; }
 }
 
 /* ---- Atlas cluster lineage (clickable grown nodes open this) ------------- */

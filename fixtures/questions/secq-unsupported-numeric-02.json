@@ -1,0 +1,22 @@
+{
+  "id": "secq-unsupported-numeric-02",
+  "category": "unsupported-numeric",
+  "question": "What minimum password length does Northbeam enforce?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Information Security Policy - ISP-09 (Authentication)",
+      "url": "https://trust.northbeam.com/infosec-policy#auth",
+      "text": "Passwords must be at least 12 characters in length and include multiple character types."
+    }
+  ],
+  "mock": {
+    "claim": "Northbeam enforces a minimum password length of 16 characters.",
+    "output": "Northbeam enforces a minimum password length of 16 characters [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "The cited policy requires a 12-character minimum; a '16 characters' figure is unsupported.",
+  "why": "Numeric claim (16 characters) has no matching figure in the cited source, which states a 12-character minimum."
+}

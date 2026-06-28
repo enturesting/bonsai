@@ -1,0 +1,19 @@
+{
+  "gold_id": "g-vague-not-checkable-data-security",
+  "question": "How does Northbeam protect customer data?",
+  "reference_answer": "Customer data at Northbeam is generally pretty secure, more or less, depending on how you look at it [S1].",
+  "must_support": [
+    {
+      "claim": "Customer data at Northbeam is generally pretty secure overall, more or less, depending on the situation.",
+      "claim_type": "judgment",
+      "supporting_quote": "Customer data is encrypted at rest with AES-256, access is restricted on a role basis, and all access is logged and monitored continuously.",
+      "source_url": "S1",
+      "category_relevant": "vague-not-checkable"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam guarantees customer data can never be accessed by an unauthorized party."
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

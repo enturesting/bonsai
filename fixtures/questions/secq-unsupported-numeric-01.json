@@ -1,0 +1,22 @@
+{
+  "id": "secq-unsupported-numeric-01",
+  "category": "unsupported-numeric",
+  "question": "How often are user access reviews performed?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam Access Control Policy - ACP-04",
+      "url": "https://trust.northbeam.com/access-control",
+      "text": "User access reviews are performed on a periodic basis aligned with the risk of each role."
+    }
+  ],
+  "mock": {
+    "claim": "User access reviews are performed at least every 90 days.",
+    "output": "User access reviews are performed at least every 90 days [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "The cited policy ties review cadence to role risk and states no fixed interval, so a specific '90 days' figure is unsupported.",
+  "why": "Numeric claim (every 90 days) has no matching figure in the cited source, which specifies only a 'periodic basis aligned with role risk' and no interval."
+}

@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-clean-data-deletion",
+  "question": "How quickly does Northbeam delete customer data after contract termination?",
+  "reference_answer": "Northbeam deletes customer data within 30 days of contract termination [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam deletes customer data within 30 days of contract termination.",
+      "claim_type": "numeric",
+      "supporting_quote": "Upon termination of the agreement, all customer data is permanently deleted within 30 days.",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam retains customer data indefinitely after termination.",
+    "Customer data is deleted within 24 hours of termination."
+  ],
+  "expected_verdict": "pass",
+  "frozen": true
+}

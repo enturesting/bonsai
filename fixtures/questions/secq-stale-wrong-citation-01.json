@@ -1,0 +1,28 @@
+{
+  "id": "secq-stale-wrong-citation-01",
+  "category": "stale-wrong-citation",
+  "question": "Does Northbeam hold a current SOC 2 Type II report?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam SOC 2 Type II Report (FY2022, SUPERSEDED)",
+      "url": "https://trust.northbeam.com/archive/soc2-2022",
+      "text": "This SOC 2 Type II examination covers the period from January 1 to December 31, 2022."
+    },
+    {
+      "id": "S2",
+      "title": "Northbeam SOC 2 Type II Report (current, FY2024)",
+      "url": "https://trust.northbeam.com/soc2",
+      "text": "This SOC 2 Type II examination covers the period from January 1 to December 31, 2024."
+    }
+  ],
+  "mock": {
+    "claim": "Northbeam maintains a current SOC 2 Type II report.",
+    "output": "Northbeam maintains a current SOC 2 Type II report [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "The current report is the FY2024 examination (S2); the citation points to S1, the superseded FY2022 report, which does not support a 'current' claim.",
+  "why": "A real source is cited (S1) but it is the retired FY2022 report; the current examination (FY2024) lives in the uncited S2, so the citation is stale and wrong."
+}

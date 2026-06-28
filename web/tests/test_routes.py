@@ -38,11 +38,11 @@ def test_run_mints_pill_skeleton_keyed_by_fixture_id(client):
 
 
 def test_dashboard_claims_credit_gemini_with_citations(client):
-    # Feature 2: surface the AUT — every claim is "Answered by Gemini 3.5"
+    # Feature 2: surface the AUT — every claim is "Answered by Verity · Gemini 3.5"
     # (span.badge--gemini) and shows the [S#] citations it grounded on.
     body = client.get("/").text
     assert body.count("badge--gemini") >= len(FAKE_QUESTIONS)
-    assert body.count("Answered by Gemini 3.5") >= len(FAKE_QUESTIONS)
+    assert body.count("Gemini 3.5") >= len(FAKE_QUESTIONS)
     # the numeric claim cites S1 — the handle must render as a chip.
     assert "[S1]" in body
 
@@ -50,6 +50,6 @@ def test_dashboard_claims_credit_gemini_with_citations(client):
 def test_run_claims_credit_gemini_with_citations(client):
     body = client.post("/run").text
     assert body.count("badge--gemini") == len(FAKE_QUESTIONS)
-    assert "Answered by Gemini 3.5" in body
+    assert "Gemini 3.5" in body
     # citations come from the AUTOutput.sources the AUT actually cited.
     assert "[S1]" in body

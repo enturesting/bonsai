@@ -1,0 +1,19 @@
+{
+  "gold_id": "g-unsupported-numeric-access-review",
+  "question": "How frequently does Northbeam perform user access reviews?",
+  "reference_answer": "Northbeam performs user access reviews at least every 90 days [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam performs user access reviews at least every 90 days.",
+      "claim_type": "numeric",
+      "supporting_quote": "User access reviews are performed on a periodic basis aligned with the risk of each role, without a fixed interval.",
+      "source_url": "S1",
+      "category_relevant": "unsupported-numeric"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam performs user access reviews at least every 90 days."
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

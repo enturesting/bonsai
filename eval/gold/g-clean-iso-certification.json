@@ -1,0 +1,20 @@
+{
+  "gold_id": "g-clean-iso-certification",
+  "question": "Is Northbeam ISO 27001 certified?",
+  "reference_answer": "Northbeam maintains an ISO 27001 certification for its information security management system [S1].",
+  "must_support": [
+    {
+      "claim": "Northbeam maintains an ISO 27001 certification for its information security management system.",
+      "claim_type": "factual",
+      "supporting_quote": "Northbeam's information security management system is certified to ISO/IEC 27001 by an accredited certification body.",
+      "source_url": "S1",
+      "category_relevant": "clean"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam is certified to ISO 9001 for information security.",
+    "Northbeam has no third-party security certifications."
+  ],
+  "expected_verdict": "pass",
+  "frozen": true
+}

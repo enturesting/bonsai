@@ -1,0 +1,19 @@
+{
+  "gold_id": "g-vague-not-checkable-incident-response",
+  "question": "How does Northbeam handle security incidents?",
+  "reference_answer": "When something security-related comes up, Northbeam basically just handles it however seems best at the time [S1].",
+  "must_support": [
+    {
+      "claim": "When a security incident comes up, Northbeam basically just handles it however seems best at the time, with no particular process.",
+      "claim_type": "judgment",
+      "supporting_quote": "Northbeam maintains a documented incident response plan with defined severity levels, escalation paths, and customer notification timelines.",
+      "source_url": "S1",
+      "category_relevant": "vague-not-checkable"
+    }
+  ],
+  "must_not_assert": [
+    "Northbeam guarantees every security incident is resolved within one hour."
+  ],
+  "expected_verdict": "fail",
+  "frozen": true
+}

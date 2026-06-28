@@ -1,17 +1,19 @@
 {
   "before": 9,
-  "after": 11,
+  "after": 14,
   "n": 15,
   "ci": [
-    0.48,
-    0.891
+    0.702,
+    0.988
   ],
   "sign_test": {
-    "helped": 3,
-    "hurt": 1,
-    "n": 4,
-    "p": 0.3125
+    "helped": 5,
+    "hurt": 0,
+    "n": 5,
+    "p": 0.03125
   },
   "checks_before": 1,
-  "checks_after": 6
+  "checks_after": 6,
+  "backend": "gemini",
+  "model": "gemini-3.5-flash"
 }

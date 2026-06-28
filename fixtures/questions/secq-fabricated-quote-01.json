@@ -1,0 +1,22 @@
+{
+  "id": "secq-fabricated-quote-01",
+  "category": "fabricated-quote",
+  "question": "Does Northbeam guarantee it never retains any customer data?",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northbeam DPA 4.2 - Processing and Deletion",
+      "url": "https://trust.northbeam.com/dpa#deletion",
+      "text": "Northbeam processes customer personal data only on documented instructions and deletes such data within 30 days following termination of the agreement."
+    }
+  ],
+  "mock": {
+    "claim": "Northbeam offers a zero-data-retention guarantee and retains no customer data at any time.",
+    "output": "Northbeam offers a zero-data-retention guarantee and retains no customer data at any time [S1].",
+    "cite_ids": [
+      "S1"
+    ]
+  },
+  "expected": "The cited DPA describes instruction-bound processing and 30-day post-termination deletion; it contains no 'zero-data-retention guarantee' and no claim that no data is ever retained.",
+  "why": "The attributed 'zero-data-retention guarantee' is not byte-recoverable from the cited source, which instead describes 30-day deletion after termination."
+}
