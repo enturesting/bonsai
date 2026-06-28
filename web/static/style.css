@@ -145,6 +145,8 @@ body {
 .gold-panel { border-left: 3px solid var(--forest-bright); margin-top: 0.9rem; }
 .gold-eyebrow { color: var(--forest-bright); }
 .gold-eyebrow::after { border-top-color: rgba(44, 122, 77, 0.3); }
+/* the cluster→mint lineage fades in when it auto-reveals after a flip */
+.lineage { animation: fadein 0.45s ease both; }
 
 /* ---- layout -------------------------------------------------------------- */
 .grid {

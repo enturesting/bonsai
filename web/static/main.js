@@ -69,13 +69,20 @@ if (typeof document !== "undefined") {
     if (rule) rule.scrollTop = rule.scrollHeight;
   });
 
-  // 3. when an improve stream closes via the `done` event, sprout a branch.
-  // htmx:sseClose also fires on nodeReplaced/nodeMissing (e.g. reopening a
-  // panel); only type:'message' is the real done-driven close, so gate on it to
-  // avoid a spurious /tree refresh + replayed sprout for an unminted check.
+  // 3. when an improve stream closes via the `done` event: sprout a branch AND
+  // auto-reveal the cluster->mint->is_general lineage for that claim, so the moat
+  // mechanism (Atlas $vectorSearch cluster -> minted general check -> gate) is the
+  // DEFAULT surface right after the flip — not a hidden second click.
+  // htmx:sseClose also fires on nodeReplaced/nodeMissing; only type:'message' is
+  // the real done-driven close, so gate on it.
   document.body.addEventListener("htmx:sseClose", function (evt) {
-    if (evt.detail && evt.detail.type === "message") {
-      document.body.dispatchEvent(new Event("grow"));
+    if (!evt.detail || evt.detail.type !== "message") return;
+    document.body.dispatchEvent(new Event("grow"));
+    var imp = evt.target && evt.target.closest ? evt.target.closest(".improve") : evt.target;
+    var cid = imp && imp.getAttribute && imp.getAttribute("data-claim-id");
+    if (cid && window.htmx) {
+      window.htmx.ajax("GET", "/tree/" + encodeURIComponent(cid),
+        { target: "#lineage", swap: "innerHTML" });
     }
   });
 }
