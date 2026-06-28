@@ -9,7 +9,7 @@ services:
     dockerfile_path: deploy/Dockerfile
     source_dir: /
     github:
-      repo: REPLACE_WITH/owner-repo   # e.g. nic/bonsai — or use `doctl apps create` from a local push
+      repo: enturesting/bonsai
       branch: main
       deploy_on_push: true
     instance_count: 1
@@ -24,21 +24,19 @@ services:
       success_threshold: 1
       failure_threshold: 3
     envs:
-      # --- Secrets: values injected at/after create, never stored in git ---
-      - key: MONGODB_URI
+      # MOCK-FIRST DEPLOY: the whole demo (red→green flip + Atlas lineage money-shot)
+      # runs OFFLINE with these two flags — NO secrets, nothing external to fail on
+      # stage, and /healthz boots clean. This is the bulletproof public URL for $600.
+      - key: WEB_MOCK_STREAM
         scope: RUN_TIME
-        type: SECRET
-      - key: ANTHROPIC_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      - key: VOYAGE_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      - key: GEMINI_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      # --- Deterministic no-API AUT path (fixtures.run_agent). "1" to enable. ---
+        type: GENERAL
+        value: "1"
       - key: MOCK_AUT
         scope: RUN_TIME
         type: GENERAL
-        value: "0"
+        value: "1"
+      # --- TO GO LIVE later (optional): drop WEB_MOCK_STREAM, set MOCK_AUT=0, and add
+      #     as SECRET via the DO UI: MONGODB_URI, VOYAGE_API_KEY (Atlas + Voyage live).
+      #     Gemini-on-Vertex needs a service-account JSON (GOOGLE_APPLICATION_CREDENTIALS)
+      #     + GOOGLE_CLOUD_PROJECT/GOOGLE_CLOUD_LOCATION — see api-key-setup-guide.md §Vertex.
+      #     (ADC from `gcloud` does NOT exist on the DO box — W12 risk #5.)
