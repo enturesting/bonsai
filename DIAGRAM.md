@@ -38,7 +38,7 @@ flowchart LR
 
 ## 2. "What stops the loop overfitting to gold? Does gold *prove* honesty?" — **the moat**
 
-The improving loop (`/loop`) has **no static code path** to the frozen gold set. A build-failing
+The improving loop (`/loop`) has **no naive code path** to the frozen gold set. A build-failing
 test (`eval/tests/test_honesty_gate.py::test_loop_never_references_gold_or_eval`) scans `/loop`
 source and fails CI if it ever contains `import eval`, `from eval`, `eval/gold`, or `load_gold`.
 So there is no gradient for the loop to fit to. Gold doesn't *prove* honesty — it's a held-out
@@ -54,7 +54,7 @@ flowchart TB
     test{{"BUILD-FAILING TEST · eval/tests/test_honesty_gate.py<br/>/loop may not import eval/ or read eval/gold"}}
     gold[("Frozen gold<br/>15 human-authored, held-out items")]
     receipt["Honesty receipt<br/>direction + Wilson CI<br/>(agreement, never 'proof')"]
-    loop -. "NO static code path" .-> test
+    loop -. "NO naive code path" .-> test
     test -. "wall" .-> gold
     wp --> receipt
     gold --> receipt
