@@ -54,7 +54,7 @@
     <div class="lin-verdict">
       {% if v.is_general %}
         <span class="lin-pass">✓ is_general</span> — passed all known-good{% if v.n_known_good %} ({{ v.n_known_good }}){% endif %},
-        caught {{ v.caught_siblings }} sibling{{ '' if v.caught_siblings == 1 else 's' }}
+        and generalizes beyond the seed failure (gate needs ≥2)
       {% else %}
         <span class="lin-fail">✗ not general</span> — caught only {{ v.caught_siblings }} sibling{{ '' if v.caught_siblings == 1 else 's' }} (gate needs ≥2)
       {% endif %}
