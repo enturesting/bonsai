@@ -8,7 +8,7 @@ Mongo / Voyage / Anthropic / Gemini directly.
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sse_starlette.sse import EventSourceResponse
 
 import fixtures
@@ -65,6 +65,17 @@ async def dashboard(request: Request) -> HTMLResponse:
             "branches": RUBRIC.branches(),
         },
     )
+
+
+@router.post("/reset")
+async def reset(request: Request) -> RedirectResponse:
+    """Clear the in-memory rubric/tree so the demo starts fresh.
+
+    Display state only — there's NO database to wipe (the tree's growth history lives
+    in the process-wide RUBRIC). Redirects back to a clean dashboard.
+    """
+    RUBRIC.reset()
+    return RedirectResponse(url="/", status_code=303)
 
 
 @router.post("/run", response_class=HTMLResponse)

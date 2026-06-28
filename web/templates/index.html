@@ -18,10 +18,15 @@
         <span class="tagline">self-improving eval harness</span>
       </div>
     </div>
-    <form hx-post="/run" hx-target="#claims" hx-swap="innerHTML" hx-indicator="#run-spin">
-      <button type="submit" class="btn btn--run">Run AUT over fixtures</button>
-      <span id="run-spin" class="htmx-indicator">running…</span>
-    </form>
+    <div class="topbar-actions">
+      <form method="post" action="/reset">
+        <button type="submit" class="btn btn--ghost" title="Clear the tree and start fresh">&#8634; Reset</button>
+      </form>
+      <form hx-post="/run" hx-target="#claims" hx-swap="innerHTML" hx-indicator="#run-spin">
+        <button type="submit" class="btn btn--run">Run AUT over fixtures</button>
+        <span id="run-spin" class="htmx-indicator">running…</span>
+      </form>
+    </div>
   </header>
 
   <p class="hero-line">Catch a failure&nbsp;&rarr; cluster it&nbsp;&rarr; mint a general check&nbsp;&rarr; prove it generalizes — <strong>and prove the loop never read the answer key.</strong></p>
