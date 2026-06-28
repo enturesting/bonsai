@@ -70,10 +70,16 @@ async def _context(claim_id: str) -> tuple[AUTOutput, Check, list[AUTOutput]]:
     Working pool ONLY — never the gold set.
     """
     questions = fixtures.load_fixture_questions()
-    fixture = next((q for q in questions if q.get("id") == claim_id),
-                   questions[0] if questions else None)
-    output = fixtures.run_agent(fixture)
-    pool = [fixtures.run_agent(q) for q in questions]
+    # Run the AUT over the whole working pool CONCURRENTLY — each run_agent is a
+    # blocking model call, so gather-over-threads turns ~9 sequential calls into one
+    # wall-clock pass. The clicked claim's output is its own pool entry (resolved
+    # once and reused), keeping the pill and the after-count on one generation.
+    pool = (
+        list(await asyncio.gather(*(asyncio.to_thread(fixtures.run_agent, q) for q in questions)))
+        if questions else []
+    )
+    idx = next((i for i, q in enumerate(questions) if q.get("id") == claim_id), 0)
+    output = pool[idx] if pool else fixtures.run_agent(questions[0] if questions else {})
     db = store.get_db()
     check = _pick_check(await store.get_checks(db))
     return output, check, pool
@@ -86,6 +92,13 @@ def _apply_rule(check: Check, rule_text: str) -> Check:
 
 def _green_count(check: Check, pool: list[AUTOutput]) -> int:
     return sum(1 for o in pool if run_check(check, o.claim, o).passed)
+
+
+async def _green_count_async(check: Check, pool: list[AUTOutput]) -> int:
+    """Concurrent green-count: each run_check is a blocking model call, so run them
+    together (one wall-clock pass) instead of N sequential calls."""
+    verdicts = await asyncio.gather(*(asyncio.to_thread(run_check, check, o.claim, o) for o in pool))
+    return sum(1 for v in verdicts if v.passed)
 
 
 # ── frozen public surface ────────────────────────────────────────────────────
@@ -135,7 +148,7 @@ async def eval_stream(claim_id: str):
         await asyncio.sleep(0)  # flush the yellow pill immediately
 
         n = len(pool)
-        before = _green_count(check, pool)
+        before = await _green_count_async(check, pool)
 
         rule_text = ""
         async for token in _rewrite_tokens(output, check):
@@ -146,7 +159,7 @@ async def eval_stream(claim_id: str):
         passed = run_check(new_check, output.claim, output).passed
         yield _pill(claim_id, "green" if passed else "red", "GREEN" if passed else "RED")
 
-        after = _green_count(new_check, pool)
+        after = await _green_count_async(new_check, pool)
         lo, hi = _wilson(after, n)
         yield {
             "event": "score",

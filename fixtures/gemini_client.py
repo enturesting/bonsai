@@ -44,22 +44,27 @@ def _build_prompt(question: str, candidate_sources: "list[Source]") -> str:
     )
 
 
-_vertex = None
+import threading
+
+_tls = threading.local()
 
 
 def _vertex_client(cfg):
-    """Lazy singleton google-genai Vertex client — one transport, reused across the
-    9-fixture AUT run (a fresh client per call can close the shared httpx transport)."""
-    global _vertex
-    if _vertex is None:
+    """Thread-local google-genai Vertex client — one per worker thread, so the
+    concurrent AUT pool (asyncio.to_thread) never shares one httpx client across
+    threads (which closes mid-flight) and a fresh-per-call client never GCs the
+    shared transport."""
+    client = getattr(_tls, "client", None)
+    if client is None:
         from google import genai
 
-        _vertex = genai.Client(
+        client = genai.Client(
             vertexai=True,
             project=cfg.google_cloud_project,
             location=cfg.google_cloud_location,
         )
-    return _vertex
+        _tls.client = client
+    return client
 
 
 def _answer_text(cfg, question: str, candidate_sources: "list[Source]") -> str:

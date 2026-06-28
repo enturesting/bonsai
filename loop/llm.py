@@ -44,23 +44,28 @@ def _backend() -> str:
 
 # ── Gemini / Vertex backend (default) ───────────────────────────────────────
 
-_gemini = None
+import threading
+
+_tls = threading.local()
 
 
 def _gemini_client():
-    """Lazy singleton google-genai Vertex client — one transport, reused across calls
-    (a fresh client per call can close the shared httpx transport on GC)."""
-    global _gemini
-    if _gemini is None:
+    """Thread-local google-genai Vertex client — one per worker thread. A fresh
+    client per call closes the shared httpx transport on GC; a single shared client
+    closes mid-flight under the concurrent green-count (asyncio.to_thread). One
+    persistent client per thread avoids both."""
+    client = getattr(_tls, "client", None)
+    if client is None:
         from google import genai  # google-genai unified SDK (lazy import)
 
         cfg = get_settings()
-        _gemini = genai.Client(
+        client = genai.Client(
             vertexai=True,
             project=cfg.google_cloud_project,
             location=cfg.google_cloud_location,
         )
-    return _gemini
+        _tls.client = client
+    return client
 
 
 def _gemini_parse(*, system, user, schema, max_tokens):
