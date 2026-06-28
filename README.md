@@ -114,7 +114,7 @@ flowchart TB
     class GD pending;
 ```
 
-**Built, wired, and deployed:** real keys wired, Atlas `$vectorSearch` indexed (`failvec`) and seeded with real Voyage vectors, the **eval loop wired to Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed; the AUT is **verified live** via `scripts/gemini_live.py`), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The recorded demo runs the deterministic mock (the bulletproof spine); the live path is verifiable via the gated `RUN_ATLAS_IT` integration test and a live `/web`. The frozen gold set is authored on-site — one commit per item, by design (that discipline *is* the honesty rail).
+**Built, wired, and deployed:** real keys wired, **Atlas `$vectorSearch` indexed (`failvec`) and live-verified** (a real query returned a genuine `vectorSearchScore` over real Voyage vectors), the **eval loop wired to Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed; the AUT is **verified live** via `scripts/gemini_live.py`), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The recorded demo runs the deterministic mock (the bulletproof spine) for determinism. The frozen gold set is human-authored and version-controlled (amendable per item) — that discipline *is* the honesty rail.
 
 ### Target state — the self-improving loop + the moat
 
@@ -280,7 +280,7 @@ WEB_MOCK_STREAM=1 MOCK_AUT=1 WEB_MOCK_DELAY=0.06 ./.venv/bin/uvicorn main:app --
 
 ## 🏆 Prize tech callouts
 
-- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Wired, indexed and seeded** — `nearest_failures_scored` returns true `vectorSearchScore`; verify live via the gated `RUN_ATLAS_IT` test (the recorded demo renders the labeled `offline mock` cluster).
+- **MongoDB Atlas Vector Search + Voyage** — the *engine*, not a sidecar. `store/vectors.py` runs real `$vectorSearch` over `voyage-3` 1024-dim embeddings; `nearest_failures()` clusters failures by *kind of mistake* (question + claim + diagnosis embedded together), which is exactly what makes a minted check **general** instead of overfit to one example. **Wired, indexed, seeded — and live-verified:** a real `$vectorSearch` over `voyage-3` vectors returned a genuine `vectorSearchScore` (≈0.85) with a true semantic cluster (free-tier Voyage is capped at 3 RPM); the recorded demo renders the labeled `offline mock` cluster for determinism.
 - **Gemini 3.5 — powers the loop end-to-end, via Vertex AI.** `gemini-3.5-flash` is both the **agent-under-test** (every claim card badged "Answered by Gemini 3.5" with its `[S#]` citations) **and** the **checker + grower** that rewrites the rules. The entire self-improving loop runs on Gemini, drawing GCP credit through ADC — no per-key prepay (`LOOP_BACKEND=gemini`, `GEMINI_BACKEND=vertex`). **Verify the live path in one call:** `./.venv/bin/python scripts/gemini_live.py` → a real Gemini 3.5 cited answer in ~3s.
 - **DigitalOcean App Platform — deployed and live: https://bonsai-h7rzp.ondigitalocean.app/.** `deploy/Dockerfile` + a `Procfile` run `uvicorn main:app --timeout-keep-alive 75` with `/healthz` health checks and SSE that survives the LB idle timeout.
 

@@ -458,6 +458,7 @@ body {
 }
 .claim-text {
   margin: 0.1rem 0 0;
+  overflow-wrap: anywhere;
   font-weight: 500;
   font-size: 1.08rem;
   color: var(--ink);

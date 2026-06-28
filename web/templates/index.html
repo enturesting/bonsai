@@ -37,9 +37,9 @@
       <form class="live-claim" hx-post="/live-claim" hx-target="#claims" hx-swap="afterbegin"
             hx-on::after-request="if (event.detail.successful) this.reset()">
         <p class="live-claim-hint"><span class="live-claim-tag">Try it live</span> paste something Verity told a prospect &mdash; watch the harness check the one you just typed.</p>
-        <textarea name="claim" rows="2" required
+        <textarea name="claim" rows="2" required maxlength="600"
                   placeholder="A claim the agent made — e.g. &ldquo;Our SOC 2 report covers all five trust criteria.&rdquo;"></textarea>
-        <textarea name="source" rows="2"
+        <textarea name="source" rows="2" maxlength="2000"
                   placeholder="Paste the source text it cited (optional)…"></textarea>
         <div class="live-claim-row">
           <select name="category" aria-label="what kind of claim this is">
