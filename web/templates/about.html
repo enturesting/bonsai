@@ -21,57 +21,37 @@
 
   <main class="about">
     <section class="about-hero">
-      <div class="about-hero-text">
-        <p class="about-motto">We grow trust, not just models.</p>
-        <p class="about-sub">A self-improving eval <strong>harness</strong>: it watches an agent fail, mints a check to catch that failure forever, and <strong>proves it stayed honest.</strong></p>
-      </div>
-      <div class="about-hero-visual">
-        <video class="hero-video" autoplay muted loop playsinline poster="/static/bonsai-logo.png"
-               aria-label="Bonsai logo, gently animated">
-          <source src="/static/bonsai-loop.mp4" type="video/mp4">
-          <img src="/static/bonsai-logo.png" alt="Bonsai logo" />
-        </video>
-      </div>
+      <video class="hero-mark" autoplay muted loop playsinline poster="/static/bonsai-logo.png"
+             aria-label="Bonsai logo, gently animated">
+        <source src="/static/bonsai-loop.mp4" type="video/mp4">
+        <img src="/static/bonsai-logo.png" alt="Bonsai logo" />
+      </video>
+      <h1 class="about-motto">We grow trust, not just models.</h1>
+      <p class="about-sub">A self-improving eval <strong>harness</strong>: it watches an agent fail, mints a check to catch that failure forever &mdash; and <strong>proves it stayed honest.</strong></p>
     </section>
 
-    <section class="about-block">
-      <h2>The problem</h2>
-      <p>Evals are the bottleneck on safe autonomy. They&rsquo;re <strong>written by hand</strong>, they <strong>go stale</strong>, and when a system grows its own evals, <strong>nobody can tell if it improved or just learned to flatter its own grader.</strong></p>
-    </section>
-
-    <section class="about-block">
-      <h2>How it works</h2>
-      <ol class="about-steps">
-        <li><span class="step-k">Catch</span> a failure &mdash; a claim with no real support in its cited source.</li>
-        <li><span class="step-k">Cluster</span> it with similar failures by <em>meaning</em> &mdash; Atlas vector search.</li>
-        <li><span class="step-k">Mint</span> one <em>general</em> check that catches the whole class.</li>
-        <li><span class="step-k">Grow &amp; prune</span> &mdash; the rubric improves itself.</li>
-      </ol>
-      <p class="about-aside">The rubric <strong>is</strong> the harness. Each branch of the bonsai is one check.</p>
-    </section>
-
-    <section class="about-block">
-      <h2>The words, simply</h2>
-      <dl class="about-glossary">
-        <dt>Agent&#8209;under&#8209;test</dt><dd>the AI you want to trust (today: a Gemini&nbsp;3.5 cited&#8209;answer agent).</dd>
-        <dt>Check</dt><dd>one rule the output must pass.</dd>
-        <dt>Rubric / harness</dt><dd>the growing set of checks.</dd>
-        <dt>Mint</dt><dd>create a new general check from a cluster of failures.</dd>
-        <dt>Gold set</dt><dd>a frozen answer key the harness is graded against &mdash; that the loop can&rsquo;t read, so it can&rsquo;t cheat.</dd>
-      </dl>
-    </section>
-
-    <section class="about-block">
-      <h2>Why it matters &mdash; and where it goes</h2>
-      <p>A <strong>domain expert</strong> defines what &ldquo;good&rdquo; means; Bonsai turns it into a <strong>living harness that matures itself</strong> &mdash; instead of a spec that rots in a doc.</p>
-      <p>Today it&rsquo;s cited answers. Same loop, any agent: a <strong>video</strong> or <strong>image generator</strong>, a contract analyzer, a support bot. <strong>The mechanism doesn&rsquo;t change &mdash; only the contract does.</strong></p>
-    </section>
+    <div class="about-flow">
+      <div class="flow-step"><span class="flow-n">1</span><strong>Catch</strong><span>a failure &mdash; a claim with no real support in its source</span></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><span class="flow-n">2</span><strong>Cluster</strong><span>similar failures by meaning &mdash; Atlas vector search</span></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><span class="flow-n">3</span><strong>Mint</strong><span>one general check that catches the whole class</span></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><span class="flow-n">4</span><strong>Grow</strong><span>the rubric improves itself</span></div>
+    </div>
+    <p class="about-aside">The rubric <strong>is</strong> the harness &mdash; each branch of the bonsai is one check.</p>
 
     <section class="about-block about-moat">
       <h2>The honesty rail</h2>
-      <p>Anyone can turn a green light on. Here&rsquo;s why you can&rsquo;t fake this one: <strong>the loop that writes the checks has no code path to the answer key it&rsquo;s graded against</strong> &mdash; a test fails the build if they ever touch. We report direction + a confidence interval, <em>never a bare&nbsp;%</em>.</p>
-      <a class="btn btn--run" href="/">Watch a check get born &rarr;</a>
+      <p>The loop that writes the checks <strong>has no code path to the answer key it&rsquo;s graded against</strong> &mdash; a test fails the build if they ever touch. Improvement is reported as direction + a confidence interval, <em>never a bare&nbsp;%</em>.</p>
     </section>
+
+    <section class="about-block">
+      <h2>Where it goes</h2>
+      <p>Today it&rsquo;s cited answers. The same loop owns the contract for <strong>any</strong> agent &mdash; a <strong>video</strong> or <strong>image generator</strong>, a contract analyzer, a support bot. A domain expert defines what &ldquo;good&rdquo; means; Bonsai grows the harness. <strong>The mechanism doesn&rsquo;t change &mdash; only the contract does.</strong></p>
+    </section>
+
+    <a class="btn btn--run about-cta" href="/">Watch a check get born &rarr;</a>
   </main>
 </body>
 </html>
