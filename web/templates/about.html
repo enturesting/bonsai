@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bonsai — what it is</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-mark" src="/static/bonsai-logo.png" width="44" height="44"
+           alt="Bonsai — a bonsai forming a checkmark inside a gold enso circle">
+      <div class="brand-text">
+        <span class="wordmark">Bonsai</span>
+        <span class="tagline">self-improving eval harness</span>
+      </div>
+    </div>
+    <a class="btn btn--run" href="/">See it live &rarr;</a>
+  </header>
+
+  <main class="about">
+    <section class="about-hero">
+      <div class="about-hero-text">
+        <p class="about-motto">We grow trust, not just models.</p>
+        <p class="about-sub">A self-improving eval <strong>harness</strong>: it watches an AI agent fail, mints a brand-new check to catch that failure forever, grows and prunes its own rubric &mdash; and proves it stayed honest while doing it.</p>
+        <p class="about-oneline">Evals are the bottleneck on safe autonomy &mdash; not model capability, <strong>trust.</strong> Bonsai makes the eval harness something that <strong>grows itself</strong>, and a domain expert can actually own.</p>
+      </div>
+      <div class="about-hero-visual">
+        <div class="veo-slot" role="img" aria-label="Bonsai growing and being pruned (film)">
+          <span class="veo-play">&#9654;</span>
+          <span class="veo-label">Bonsai &mdash; grown &amp; pruned</span>
+          <span class="veo-note">Veo film drops in here</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-block">
+      <h2>The problem</h2>
+      <p>Every team shipping an AI agent needs <strong>evals</strong> &mdash; the checks that verify the agent actually does its job. But the trust layer is broken three ways at once: evals are <strong>written by hand</strong>, they <strong>go stale</strong> as the agent and the world change, and when a system grows its own evals <strong>nobody can tell whether it improved or just learned to flatter its own grader.</strong> You can&rsquo;t ship an agent you can&rsquo;t continuously verify.</p>
+    </section>
+
+    <section class="about-block">
+      <h2>What Bonsai does</h2>
+      <ol class="about-steps">
+        <li><span class="step-k">Catch</span> it runs your agent and catches a failure &mdash; here, a claim with no verbatim supporting quote in the source it cites.</li>
+        <li><span class="step-k">Cluster</span> it groups that failure with similar ones <em>by meaning</em> (MongoDB Atlas vector search), not by keyword.</li>
+        <li><span class="step-k">Mint</span> it writes a brand-new <em>general</em> check that catches the whole class &mdash; kept only if it passes <em>every</em> known-good answer and catches <em>&ge;2 distinct</em> siblings.</li>
+        <li><span class="step-k">Grow &amp; prune</span> the rubric grows and trims itself, automatically, over the agent&rsquo;s real outputs.</li>
+      </ol>
+      <p class="about-aside">The growing rubric <strong>is</strong> the eval harness. On the demo, <strong>each branch of the bonsai is one check</strong> it can now run &mdash; click a branch to trace the cluster of failures it was minted from.</p>
+    </section>
+
+    <section class="about-block">
+      <h2>The words, simply</h2>
+      <dl class="about-glossary">
+        <dt>Agent&#8209;under&#8209;test</dt><dd>the AI you want to trust &mdash; here a Gemini&nbsp;3.5 cited&#8209;answer agent, but it could be a video generator, an image model, or a support bot.</dd>
+        <dt>Check</dt><dd>one rule the output must pass &mdash; &ldquo;every number must appear in a cited source.&rdquo;</dd>
+        <dt>Rubric / harness</dt><dd>the growing set of checks &mdash; the thing that verifies your agent.</dd>
+        <dt>Mint</dt><dd>create a new <em>general</em> check from a cluster of real failures.</dd>
+        <dt>Gold set</dt><dd>a small, frozen, human&#8209;authored answer key the harness is <em>graded</em> against &mdash; and that the improving loop has no way to read, so it can&rsquo;t cheat.</dd>
+      </dl>
+    </section>
+
+    <section class="about-block">
+      <h2>Why it matters &mdash; and where it goes</h2>
+      <p>A <strong>domain contract owner</strong> &mdash; the expert who actually knows what &ldquo;correct&rdquo; means &mdash; defines the contract. Bonsai turns that into a <strong>living harness</strong> that matures as the agent and the domain evolve, instead of a static spec that rots in a doc. It simplifies the hardest part of shipping AI: building and <em>maturing</em> the evals.</p>
+      <p>Today the contract is &ldquo;cited answers.&rdquo; The same loop owns the contract for <strong>any</strong> domain agent &mdash; a <strong>video generator</strong> (does the clip match the brief? any artifacts? on&#8209;brand?), an <strong>image model</strong>, a contract analyzer, a medical&#8209;summary bot. <strong>The mechanism doesn&rsquo;t change &mdash; only the contract does.</strong></p>
+    </section>
+
+    <section class="about-block about-moat">
+      <h2>The honesty rail</h2>
+      <p>Anyone can make a green light turn on. Here&rsquo;s why you can&rsquo;t fake <em>this</em> one: <strong>the loop that writes the checks has no code path to the answer key it&rsquo;s graded against</strong> &mdash; separate files, and a test <strong>fails the build</strong> the instant they touch. We report improvement as a <strong>direction + a confidence interval</strong>, never a bare percentage. <em>That honesty is the product.</em></p>
+      <a class="btn btn--run" href="/">Watch a check get born &rarr;</a>
+    </section>
+  </main>
+</body>
+</html>

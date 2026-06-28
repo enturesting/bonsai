@@ -67,6 +67,12 @@ async def dashboard(request: Request) -> HTMLResponse:
     )
 
 
+@router.get("/about", response_class=HTMLResponse)
+async def about(request: Request) -> HTMLResponse:
+    """The intro/about page — the no-PowerPoint opening + plain-language explainer."""
+    return templates.TemplateResponse("about.html", {"request": request})
+
+
 @router.post("/reset")
 async def reset(request: Request) -> RedirectResponse:
     """Clear the in-memory rubric/tree so the demo starts fresh.
