@@ -44,6 +44,24 @@ def _build_prompt(question: str, candidate_sources: "list[Source]") -> str:
     )
 
 
+_vertex = None
+
+
+def _vertex_client(cfg):
+    """Lazy singleton google-genai Vertex client — one transport, reused across the
+    9-fixture AUT run (a fresh client per call can close the shared httpx transport)."""
+    global _vertex
+    if _vertex is None:
+        from google import genai
+
+        _vertex = genai.Client(
+            vertexai=True,
+            project=cfg.google_cloud_project,
+            location=cfg.google_cloud_location,
+        )
+    return _vertex
+
+
 def _answer_text(cfg, question: str, candidate_sources: "list[Source]") -> str:
     """Drive the configured Gemini backend; return the raw JSON response text.
 
@@ -54,20 +72,16 @@ def _answer_text(cfg, question: str, candidate_sources: "list[Source]") -> str:
     prompt = _build_prompt(question, candidate_sources)
 
     if cfg.gemini_backend == "vertex":
-        from google import genai  # google-genai unified SDK (lazy import)
         from google.genai import types
 
-        client = genai.Client(
-            vertexai=True,
-            project=cfg.google_cloud_project,
-            location=cfg.google_cloud_location,
-        )
-        resp = client.models.generate_content(
+        resp = _vertex_client(cfg).models.generate_content(
             model=cfg.gemini_model,
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=_SYSTEM,
                 response_mime_type="application/json",
+                max_output_tokens=1024,
+                thinking_config=types.ThinkingConfig(thinking_budget=0),
             ),
         )
         return resp.text

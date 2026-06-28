@@ -70,6 +70,9 @@ def patch_llm(monkeypatch):
     """Install a FakeClient as the singleton Anthropic client for loop.llm."""
     def _install(client):
         from loop import llm
+        # Force the Anthropic path so the FakeClient + request-shape assertions apply
+        # (default backend is gemini; tests pin anthropic to exercise get_client).
+        monkeypatch.setattr(llm, "_backend", lambda: "anthropic")
         monkeypatch.setattr(llm, "get_client", lambda: client)
         return client
     return _install

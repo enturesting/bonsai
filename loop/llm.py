@@ -19,6 +19,8 @@ network — they patch `get_client`.
 """
 from __future__ import annotations
 
+from config import get_settings
+
 HAIKU = "claude-haiku-4-5"  # cheap checker — plain, no effort/adaptive
 OPUS = "claude-opus-4-8"     # grower / judge / skeptic — adaptive + effort=high
 
@@ -35,8 +37,81 @@ def get_client():
     return _client
 
 
+def _backend() -> str:
+    """Engine LLM provider: 'gemini' (Vertex, free via credit) or 'anthropic'."""
+    return get_settings().loop_backend
+
+
+# ── Gemini / Vertex backend (default) ───────────────────────────────────────
+
+_gemini = None
+
+
+def _gemini_client():
+    """Lazy singleton google-genai Vertex client — one transport, reused across calls
+    (a fresh client per call can close the shared httpx transport on GC)."""
+    global _gemini
+    if _gemini is None:
+        from google import genai  # google-genai unified SDK (lazy import)
+
+        cfg = get_settings()
+        _gemini = genai.Client(
+            vertexai=True,
+            project=cfg.google_cloud_project,
+            location=cfg.google_cloud_location,
+        )
+    return _gemini
+
+
+def _gemini_parse(*, system, user, schema, max_tokens):
+    """Gemini structured call (Vertex JSON mode) → validated `schema` instance."""
+    from google.genai import types
+
+    cfg = get_settings()
+    resp = _gemini_client().models.generate_content(
+        model=cfg.gemini_model,
+        contents=user,
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            response_mime_type="application/json",
+            response_schema=schema,
+            max_output_tokens=max_tokens,
+            # Gemini 3.x thinking shares the output budget; disable it so the small
+            # structured verdict/check always fits and returns fast.
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+        ),
+    )
+    parsed = resp.parsed
+    if parsed is None:  # fall back to manual validation if .parsed is unset
+        parsed = schema.model_validate_json(resp.text)
+    return parsed
+
+
+def _gemini_stream_text(*, system, user, max_tokens):
+    """Gemini streaming (Vertex) yielding text-delta tokens for the rule rewrite."""
+    from google.genai import types
+
+    cfg = get_settings()
+    for chunk in _gemini_client().models.generate_content_stream(
+        model=cfg.gemini_model,
+        contents=user,
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            max_output_tokens=max_tokens,
+            # No thinking → tokens stream immediately (no pre-stream pause on stage).
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+        ),
+    ):
+        if chunk.text:
+            yield chunk.text
+
+
+# ── Public helpers (route on the configured backend) ────────────────────────
+
 def haiku_parse(*, system, user, schema, max_tokens=400):
-    """Plain Haiku structured call → validated `schema` instance."""
+    """Cheap structured check → validated `schema` instance (Gemini or plain Haiku)."""
+    if _backend() == "gemini":
+        return _gemini_parse(system=system, user=user, schema=schema, max_tokens=max_tokens)
     resp = get_client().messages.parse(
         model=HAIKU,
         max_tokens=max_tokens,
@@ -48,7 +123,9 @@ def haiku_parse(*, system, user, schema, max_tokens=400):
 
 
 def opus_parse(*, system, user, schema, max_tokens=1500):
-    """Opus structured call (adaptive thinking + high effort) → `schema` instance."""
+    """Strong structured call → `schema` instance (Gemini, or Opus adaptive+effort)."""
+    if _backend() == "gemini":
+        return _gemini_parse(system=system, user=user, schema=schema, max_tokens=max_tokens)
     resp = get_client().messages.parse(
         model=OPUS,
         max_tokens=max_tokens,
@@ -62,7 +139,10 @@ def opus_parse(*, system, user, schema, max_tokens=1500):
 
 
 def opus_stream_text(*, system, user, max_tokens=2000):
-    """Opus streaming (adaptive + high effort) yielding text-delta tokens."""
+    """Streaming text-delta tokens for the rule rewrite (Gemini, or Opus)."""
+    if _backend() == "gemini":
+        yield from _gemini_stream_text(system=system, user=user, max_tokens=max_tokens)
+        return
     with get_client().messages.stream(
         model=OPUS,
         max_tokens=max_tokens,

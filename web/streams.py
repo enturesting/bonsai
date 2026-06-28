@@ -23,8 +23,16 @@ def _truthy(value: str) -> bool:
 def use_mock() -> bool:
     if _truthy(os.getenv("WEB_MOCK_STREAM", "")):
         return True
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        return True  # no key → real loop can't reach Anthropic; fall back to mock.
+    # The Gemini/Vertex backend needs no Anthropic key (ADC + GCP credit); only the
+    # anthropic backend falls back to mock when its key is missing.
+    try:
+        from config import get_settings
+
+        backend = get_settings().loop_backend
+    except Exception:
+        backend = "anthropic"
+    if backend == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
+        return True
     try:
         import loop
 

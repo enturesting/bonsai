@@ -16,6 +16,11 @@ from pydantic_settings import BaseSettings  # pydantic v2 — separate package
 
 
 class Settings(BaseSettings):
+    # ── Eval-loop LLM backend ──────────────────────────────────────────
+    # "gemini" = grower/checker run on Gemini via Vertex (free via GCP credit, no
+    # Anthropic key); "anthropic" = Opus/Haiku (needs ANTHROPIC_API_KEY).
+    loop_backend: str = Field("gemini", env="LOOP_BACKEND")
+
     # ── Anthropic ──────────────────────────────────────────────────────
     anthropic_api_key: str = Field("", env="ANTHROPIC_API_KEY")
     grower_model: str = Field("claude-opus-4-8", env="GROWER_MODEL")
