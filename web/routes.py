@@ -85,6 +85,8 @@ async def dashboard(request: Request) -> HTMLResponse:
             "claims": claims,
             "score": _baseline_score(len(claims)),
             "branches": RUBRIC.branches(),
+            "checks": RUBRIC.checks(),
+            "maturity": RUBRIC.maturity(),
             "gold_result": _load_gold_result(),
         },
     )
@@ -168,16 +170,26 @@ async def improve_container(request: Request, claim_id: str) -> HTMLResponse:
     )
 
 
+def _category_for(claim_id: str) -> str:
+    """The failure category for a claim id (fixture OR live) — powers the maturity
+    meter. pool_with_live() is cached/cheap and already the resolver everywhere else."""
+    for q in pool_with_live():
+        if q.get("id") == claim_id:
+            return q.get("category", "")
+    return ""
+
+
 def _growth_observer(claim_id: str):
     """Record a rubric branch when the improve's score event passes by.
 
     This is display history only — /web never mints/prunes; it just watches
     eval_stream's output and remembers that this claim's check evolved.
     """
+    cat = _category_for(claim_id)
 
     def observe(d: dict) -> None:
         if d.get("event") == "score":
-            RUBRIC.record_growth(claim_id, bool(d["data"].get("passed")))
+            RUBRIC.record_growth(claim_id, bool(d["data"].get("passed")), cat)
 
     return observe
 
@@ -196,6 +208,16 @@ async def stream_improve(claim_id: str) -> EventSourceResponse:
         sse_events(claim_id, stream_fn, observer=_growth_observer(claim_id)),
         ping=20,
         headers={"X-Accel-Buffering": "no"},
+    )
+
+
+@router.get("/rubric", response_class=HTMLResponse)
+async def rubric(request: Request) -> HTMLResponse:
+    """The living checklist + maturity meter — refreshed on the same `grow` event
+    the tree listens to. Display state only (RUBRIC.checks/maturity)."""
+    return templates.TemplateResponse(
+        "_rubric.html",
+        {"request": request, "checks": RUBRIC.checks(), "maturity": RUBRIC.maturity()},
     )
 
 

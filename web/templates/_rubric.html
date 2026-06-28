@@ -1,0 +1,56 @@
+<section id="rubric" class="panel rubric-panel"
+         hx-get="/rubric" hx-trigger="grow from:body" hx-swap="outerHTML">
+  <h2>Rubric <span class="hint">the living checklist &mdash; grows wider &amp; sharper</span></h2>
+
+  {# ── maturity meter: coverage of the 5 failure families ── #}
+  <div class="maturity">
+    <div class="maturity-head">
+      <span class="maturity-count">Covers <strong>{{ maturity.covered }}</strong> of {{ maturity.total }} failure families</span>
+      <span class="maturity-sub hint">{{ maturity.n_checks }} check{{ '' if maturity.n_checks == 1 else 's' }} &middot; {{ maturity.n_improves }} improve{{ '' if maturity.n_improves == 1 else 's' }}</span>
+    </div>
+    <div class="maturity-bar" role="img"
+         aria-label="{{ maturity.covered }} of {{ maturity.total }} failure families covered">
+      {% for seg in maturity.segments %}
+      <span class="mseg mseg--{{ seg.category }}{{ ' mseg--filled' if seg.filled }}{{ ' mseg--new' if seg.new }}"
+            title="{{ seg.label }}{{ ' — covered' if seg.filled else ' — not yet caught' }}"></span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── the rooted human standard (seed), always shown ── #}
+  <ol class="checklist">
+    <li class="check check--seed">
+      <span class="check-dot dot--seed"></span>
+      <div class="check-body">
+        <div class="check-line">
+          <span class="check-name">Rooted standard</span>
+          <span class="check-tag">the contract you started from</span>
+        </div>
+        <div class="check-prop">Every numeric claim has a verbatim supporting quote in a cited source.</div>
+      </div>
+    </li>
+
+    {# ── one row per minted failure-family check ── #}
+    {% for c in checks %}
+    <li class="check check--{{ c.status }}{{ ' check--new' if c.new }}">
+      <span class="check-dot dot--{{ c.category }}"></span>
+      <div class="check-body">
+        <div class="check-line">
+          <span class="check-name">{{ c.label }}</span>
+          {% if c.version > 1 %}<span class="ver-chip" title="sharpened by {{ c.version }} distinct failures">v{{ c.version }}</span>{% endif %}
+          <span class="check-status status--{{ c.status }}">{{ '✓ active' if c.status == 'active' else 'watching' }}</span>
+        </div>
+        <div class="check-mint hint">minted from {{ c.minted_from }} failure{{ '' if c.minted_from == 1 else 's' }}</div>
+        <div class="check-prop">{{ c.property }}</div>
+        {% if c.diff %}
+        <div class="check-diff">
+          <span class="diff-from">{{ c.diff.from }}</span>
+          <span class="diff-arrow">&rarr;</span>
+          <span class="diff-to">{{ c.diff.to }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
