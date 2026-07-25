@@ -1,0 +1,27 @@
+{# Owner intake lives OUTSIDE #rubric on purpose: /teach fires the `grow`
+   trigger that outerHTML-swaps #rubric + #value-strip, and a target nested in
+   that region would be wiped ~4ms after the verdict card lands (and an open,
+   half-typed form would collapse on every improve close). #}
+<section class="panel teach-panel" id="teach-panel">
+  <h2>Teach it a rule <span class="hint">plain English in &mdash; a gated check out</span></h2>
+  <details class="teach" open>
+    <summary>+ Add a requirement</summary>
+    <form hx-post="/teach" hx-target="#teach-result" hx-swap="innerHTML"
+          hx-on::after-request="if (event.detail.successful) this.reset()">
+      <textarea name="standard" rows="2" maxlength="400" required
+                placeholder="Describe a rule in your own words &mdash; e.g. &ldquo;Never quote a price that isn&rsquo;t in the current price book.&rdquo;"></textarea>
+      <div class="teach-row">
+        {% if can_verify %}
+        <span class="teach-hint">the generality gate decides if it&rsquo;s sharp enough to police a family</span>
+        {% else %}
+        {# Keyless expectation-setting: this box records but cannot gate — say so
+           BEFORE submit. The screening pointer is prose only (the real
+           screen-an-output path isn't built yet — no link, no implied feature). #}
+        <span class="teach-hint">demo records your rule but can&rsquo;t test it &mdash; a live box runs the gate; only then can the rule start catching outputs you screen</span>
+        {% endif %}
+        <button type="submit" class="btn btn--improve">Turn it into a check &rarr;</button>
+      </div>
+    </form>
+    <div id="teach-result"></div>
+  </details>
+</section>

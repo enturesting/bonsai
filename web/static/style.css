@@ -123,6 +123,22 @@ body {
   margin-top: 1px;
 }
 
+/* runtime-mode chip — states the box's TRUE mode (web.streams.use_mock), never hardcoded */
+.mode-chip {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 0.24rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: none;
+  cursor: help;
+}
+.mode-chip--mock { color: var(--amber); background: var(--amber-soft); border: 1px solid var(--amber-line); }
+.mode-chip--live { color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); }
+
 /* legacy header h1 fallback (kept harmless if markup ever reverts) */
 .topbar h1 { font-size: 1.2rem; margin: 0; font-weight: 700; }
 .subtitle { color: var(--muted); font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem; }
@@ -131,7 +147,7 @@ body {
 /* value-prop strip under the header — lead with the pitch */
 .hero-line {
   margin: 0;
-  padding: 0.7rem 1.6rem;
+  padding: 0.5rem 1.6rem;
   text-align: center;
   font-size: 0.92rem;
   color: var(--ink-soft);
@@ -140,10 +156,33 @@ body {
 }
 .hero-line strong { color: var(--forest-deep); font-weight: 700; }
 
+/* demo-mode hint strip — shown ONLY when the box is the scripted mock: says what a
+   wired live box does instead (real checks + real generality gate). */
+.mode-hint {
+  margin: 0;
+  padding: 0.4rem 1.6rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  background: var(--amber-soft);
+  border-bottom: 1px solid var(--amber-line);
+}
+.mode-hint strong { color: var(--amber); }
+.mode-hint-tag {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+  margin-right: 0.4rem;
+  vertical-align: 0.05em;
+}
+
 /* scenario strip — gives the enterprise demo a face (Verity @ Northbeam) */
 .scenario-line {
   margin: 0;
-  padding: 0.5rem 1.6rem;
+  padding: 0.4rem 1.6rem;
   text-align: center;
   font-size: 0.8rem;
   color: var(--muted);
@@ -151,6 +190,13 @@ body {
   border-bottom: 1px solid var(--line);
 }
 .scenario-line strong { color: var(--forest-deep); font-weight: 600; }
+/* Wide screens: the strips' BANDS stay full-bleed, but their text is confined to
+   the same 1380px column as the content below — otherwise a 2560px monitor gets
+   one enormous line of text and nothing on the page lines up. */
+.hero-line, .scenario-line, .mode-hint {
+  padding-left: max(1.6rem, calc((100vw - 1380px) / 2));
+  padding-right: max(1.6rem, calc((100vw - 1380px) / 2));
+}
 .scenario-tag {
   display: inline-block;
   font-size: 0.64rem;
@@ -327,12 +373,162 @@ body {
 @keyframes row-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .mseg--new, .check--new { animation: none; } }
 
+/* ---- the method ribbon: orientation, not a wizard -------------------------- */
+.method-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 1.6rem 0;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.mstep {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.14rem 0.6rem;
+  background: var(--paper-2);
+  white-space: nowrap;
+}
+.mstep b { color: var(--gold); font-weight: 700; margin-right: 0.25rem; }
+.msep { color: var(--line-strong); }
+
+/* ---- the value strip: three health tiles that move ------------------------ */
+/* compact chips, one row — the fold budget belongs to the claims + rubric */
+.value-strip { max-width: 1380px; margin: 0 auto; padding: 0.55rem 1.6rem 0; }
+.value-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
+.vtile {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.8rem;
+  text-decoration: none;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vtile:hover { border-color: var(--forest-bright); box-shadow: var(--shadow); }
+.vtile-n {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--forest-deep);
+}
+.vtile-l { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 700px) { .value-tiles { grid-template-columns: 1fr; } }
+
+/* ---- the two scores: the hero band --------------------------------------- */
+/* the gameable working number and the frozen-gold receipt, side by side — the
+   GAP between them is the product's honesty story, so it leads the page. */
+.two-score {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0.65rem 1.6rem 0;
+}
+.two-score-intro {
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted);
+  max-width: 62rem;
+  margin-inline: auto;
+}
+.two-score-intro strong { color: var(--forest-deep); }
+.two-score-tag {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-right: 0.4rem;
+  vertical-align: 0.05em;
+}
+.two-score-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: stretch;
+}
+/* equal heights WITHOUT dead space: each panel is a flex column and its
+   explainer footer anchors to the bottom, so the shorter panel breathes in the
+   middle instead of leaving a ragged hole under itself */
+.two-score-band .panel { margin-top: 0; padding: 0.85rem 1.1rem 0.95rem; display: flex; flex-direction: column; }
+.two-score-band .receipt-moat { margin-top: auto; padding-top: 0.6rem; }
+.two-score-band .panel h2 { margin-bottom: 0.6rem; padding-bottom: 0.45rem; font-size: 1.05rem; }
+.two-score-band .score-counts { font-size: 2rem; }
+.two-score-band .receipt-moat { font-size: 0.7rem; margin-top: 0.6rem; }
+.two-score-band .score-ci { margin-top: 0.5rem; padding-top: 0.45rem; }
+.two-score-vs {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  background: var(--paper-2);
+}
+@media (max-width: 920px) {
+  .two-score-band { grid-template-columns: minmax(0, 1fr); }
+  .two-score-vs { display: none; }
+}
+
+/* the honest-degradation note when a live gold rescore fails */
+.verify-error { margin: 0.6rem 0 0; font-size: 0.76rem; color: var(--red); }
+/* the explicit live-rescore trigger on the gold receipt */
+.gold-verify { margin: 0.75rem 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; }
+.btn--verify { font-size: 0.8rem; padding: 0.42rem 0.8rem; }
+.btn--verify:disabled { opacity: 0.55; cursor: progress; }
+.verify-hint { font-size: 0.72rem; color: var(--muted); }
+
+/* the receipt card — the plain-English payoff of a check run (main.js renderReceipt) */
+.receipt { margin-top: 0.6rem; display: grid; gap: 0.4rem; }
+.receipt-verdict { font-weight: 700; font-size: 0.9rem; }
+.receipt-verdict--caught { color: var(--red); }
+.receipt-verdict--clear { color: var(--green); }
+.receipt-line {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding: 0.45rem 0.65rem;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  color: var(--ink-soft);
+}
+.receipt-honesty { border-style: dashed; color: var(--muted); }
+.receipt-score { background: transparent; border: 0; padding: 0.1rem 0.1rem 0; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+
+/* the mint story line inside the receipt (score.mint via main.js) */
+.mint-note {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding: 0.45rem 0.65rem;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  color: var(--ink-soft);
+}
+.mint-note--gated { border-color: var(--green-line); background: var(--green-soft); color: var(--forest-deep); }
+.mint-note--rejected { border-color: var(--amber-line); background: var(--amber-soft); color: var(--amber); }
+.mint-note--error { border-color: var(--red-line); background: var(--red-soft); color: var(--red); }
+
 /* ---- layout -------------------------------------------------------------- */
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 1.4rem;
-  padding: 1.5rem 1.6rem 3rem;
+  padding: 1rem 1.6rem 3rem;
   max-width: 1380px;
   margin: 0 auto;
   align-items: start;
@@ -536,6 +732,62 @@ body {
 }
 .receipt-rail { margin-top: 0.55rem; font-size: 0.78rem; color: #8c8678; }
 .receipt-rail code { font-size: 0.92em; }
+
+/* ---- "try to cheat it" station (the CI honesty lint, run live) ------------ */
+.cheat-station { margin-top: 0.6rem; padding-top: 0.45rem; border-top: 1px dashed var(--line-strong); }
+.cheat-station > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--forest);
+  padding: 0.3rem 0.1rem;
+}
+.cheat-live { margin: 0.45rem 0 0; font-size: 0.78rem; line-height: 1.45; color: var(--ink-soft); }
+.cheat-verdict { font-weight: 700; }
+.cheat-verdict--clean { color: var(--forest-deep); }
+.cheat-verdict--caught { color: var(--red); }
+.cheat-scope { margin: 0.4rem 0 0; font-size: 0.72rem; line-height: 1.45; color: var(--muted); }
+.cheat-scope strong { color: var(--forest-deep); }
+.cheat-form { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.55rem; }
+.cheat-form textarea {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  width: 100%;
+  resize: vertical;
+  padding: 0.5rem 0.6rem;
+  color: var(--ink);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+}
+.cheat-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.cheat-hint { font-size: 0.7rem; color: var(--muted); }
+.cheat-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.cheat-card {
+  margin-top: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  font-size: 0.8rem;
+}
+.cheat-card--caught { border-color: var(--red-line); background: var(--red-soft); }
+.cheat-card--clean { border-color: var(--green-line); background: var(--green-soft); }
+.cheat-card-verdict { font-weight: 700; }
+.cheat-card--caught .cheat-card-verdict { color: var(--red); }
+.cheat-card--clean .cheat-card-verdict { color: var(--forest-deep); }
+.cheat-snippet {
+  margin: 0.45rem 0 0;
+  padding: 0.45rem 0.6rem;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+.cheat-card-meta { margin-top: 0.35rem; font-size: 0.72rem; color: var(--muted); }
+.cheat-card-note { margin-top: 0.3rem; font-size: 0.7rem; color: var(--muted); }
 .about-credit { max-width: 46rem; margin: 1.6rem auto 0; text-align: center; font-size: 0.82rem; color: #8c8678; }
 .pill--yellow {
   background: var(--amber-soft); color: var(--amber);
@@ -650,6 +902,7 @@ body {
 .score-arrow { color: var(--gold); font-size: 1.4rem; font-weight: 400; }
 .score-after { color: var(--ink); transition: color 0.3s; }
 .score-after.up { color: var(--forest-bright); }
+.score-after.down { color: var(--red); }
 .score-of {
   font-family: var(--font-body);
   font-size: 0.86rem; font-weight: 500; color: var(--muted);
@@ -667,11 +920,104 @@ body {
 .score-bump { animation: bump 0.45s ease; }
 @keyframes bump { 30% { transform: scale(1.05); } }
 
-/* ---- bonsai tree --------------------------------------------------------- */
+/* ---- owner intake ("+ Add a requirement") ---------------------------------- */
+.teach { margin: 0 0 14px; }
+.teach > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--forest);
+  padding: 0.4rem 0.2rem;
+}
+.teach form { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+.teach textarea {
+  font: inherit;
+  font-size: 0.88rem;
+  width: 100%;
+  resize: vertical;
+  padding: 0.5rem 0.6rem;
+  color: var(--ink);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+}
+.teach-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.teach-hint { font-size: 0.7rem; color: var(--muted); }
+.teach-card {
+  margin-top: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  font-size: 0.8rem;
+}
+.teach-card--admitted { border-color: var(--green-line); background: var(--green-soft); }
+.teach-card--rejected { border-color: var(--amber-line); background: var(--amber-soft); }
+.teach-verdict { font-weight: 700; }
+.teach-card--admitted .teach-verdict { color: var(--forest-deep); }
+.teach-card--rejected .teach-verdict { color: var(--amber); }
+.teach-card--unverified .teach-verdict { color: var(--gold); }
+.teach-prop { margin-top: 0.25rem; color: var(--ink-soft); }
+.teach-meta { margin-top: 0.25rem; font-size: 0.72rem; color: var(--muted); }
+
+/* provenance badges — where a check came from (the owner vs a caught failure) */
+.prov {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border-radius: 999px;
+  padding: 0.06rem 0.5rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+}
+.prov--owner { color: var(--gold); border-color: var(--gold-soft); }
+.prov--grown { color: var(--forest-bright); border-color: var(--green-line); }
+.prov--frozen { color: var(--ink-soft); border-color: var(--line-strong); }
+
+/* ---- answer-key manager (owner-added gold, copy-verified) ------------------ */
+.goldkey-intro { margin: 0.3rem 0 0.4rem; font-size: 0.72rem; line-height: 1.45; color: var(--muted); }
+.goldkey-intro strong { color: var(--gold); }
+.goldkey-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.goldkey-row select {
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--ink);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 0.3rem 0.4rem;
+  max-width: 100%;
+}
+.goldkey-card {
+  margin: 0.5rem 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  font-size: 0.8rem;
+}
+.goldkey-card--added { border-color: var(--green-line); background: var(--green-soft); }
+.goldkey-card--failed { border-color: var(--red-line); background: var(--red-soft); }
+.goldkey-verdict { font-weight: 700; }
+.goldkey-card--added .goldkey-verdict { color: var(--forest-deep); }
+.goldkey-card--failed .goldkey-verdict { color: var(--red); }
+.goldkey-prop { margin-top: 0.25rem; color: var(--ink-soft); }
+.goldkey-meta { margin-top: 0.25rem; font-size: 0.72rem; color: var(--muted); }
+.goldkey-list { list-style: none; margin: 0.55rem 0 0; padding: 0.45rem 0 0; border-top: 1px dashed var(--line-strong); display: flex; flex-direction: column; gap: 0.45rem; }
+.goldkey-item { font-size: 0.76rem; color: var(--ink-soft); }
+.goldkey-item code { font-size: 0.7rem; }
+.goldkey-item-q { margin-top: 0.15rem; font-size: 0.7rem; color: var(--muted); }
+.goldkey-item--frozen { color: var(--muted); }
+
+/* provenance note on the receipt panel — owner-added items not in the shown numbers */
+.receipt-prov { margin: 0.4rem 0 0; font-size: 0.72rem; line-height: 1.45; color: var(--muted); }
+.receipt-prov strong { color: var(--ink-soft); }
+
+/* ---- bonsai tree (demoted: a growth timeline, not the hero) --------------- */
 .tree-panel .bonsai {
   display: block;
   width: 100%;
-  height: 240px;
+  height: 170px;
   transform-origin: 120px 200px;
   animation: sway 7s ease-in-out infinite;
 }

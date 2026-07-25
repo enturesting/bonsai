@@ -19,6 +19,14 @@
         <span class="tagline">self-improving eval harness</span>
       </div>
     </div>
+    {# mode chip — the box's TRUE runtime mode from web.streams.use_mock(), never hardcoded #}
+    {% if mock_mode %}
+    <span class="mode-chip mode-chip--mock"
+          title="Scripted mock: outputs, verdicts, minted checks and clusters are staged from hand-authored fixtures — designed failures, nothing recorded. No live model behind this box.">demo mode &mdash; scripted mock</span>
+    {% else %}
+    <span class="mode-chip mode-chip--live"
+          title="Wired to the live backend: checks run against the real model, and the generality gate issues real verdicts.">live mode &mdash; real model + gate</span>
+    {% endif %}
     <div class="topbar-actions">
       <a class="topbar-link" href="/about">About</a>
       <form method="post" action="/reset">
@@ -28,7 +36,25 @@
   </header>
 
   <p class="hero-line"><strong>QA on steroids</strong> &mdash; proof your AI&rsquo;s answers are actually backed by your own sources, and proof we didn&rsquo;t cheat to say so.</p>
-  <p class="scenario-line"><span class="scenario-tag">Scenario</span> <strong>Verity</strong>, Northbeam&rsquo;s trust &amp; security copilot, answers prospects&rsquo; security questionnaires from approved policy docs &mdash; with citations. Every answer must trace to an exact source sentence; some don&rsquo;t.</p>
+  {% if mock_mode %}
+  <p class="mode-hint"><span class="mode-hint-tag">Demo mode</span> every run on this box is a <strong>scripted</strong> performance of hand-authored fixtures &mdash; designed failures, nothing recorded; a wired live box screens outputs for real, running every rubric check against the live model and putting each new check through the real generality gate.</p>
+  {% endif %}
+  <p class="scenario-line"><span class="scenario-tag">Scenario</span> <strong>Verity</strong>, Northbeam&rsquo;s trust &amp; security copilot, answers prospects&rsquo; security questionnaires from approved policy docs &mdash; with citations. <strong>Priya</strong>, Northbeam&rsquo;s security lead, owns what Verity may promise &mdash; and a security reviewer&rsquo;s deadliest question is <em>&ldquo;show me where it says that.&rdquo;</em></p>
+
+  {% include "_ribbon.html" %}
+  {% include "_valuestrip.html" %}
+
+  <section class="two-score" aria-label="the two scores">
+    <p class="two-score-intro"><span class="two-score-tag">The two scores</span>
+      The loop tunes itself against the <strong>working score</strong>, so that number is gameable by design.
+      The proof is the <strong>frozen-gold receipt</strong>: held-out human answers the loop is blocked from reading.
+      If the left number climbs while the right one stalls, the loop is gaming its own tests &mdash; the gap is the tell.</p>
+    <div class="two-score-band">
+      {% include "_score.html" %}
+      <div class="two-score-vs" aria-hidden="true">vs</div>
+      {% include "_gold.html" %}
+    </div>
+  </section>
 
   <main class="grid">
     <section class="panel claims-panel">
@@ -36,7 +62,8 @@
 
       <form class="live-claim" hx-post="/live-claim" hx-target="#claims" hx-swap="afterbegin"
             hx-on::after-request="if (event.detail.successful) this.reset()">
-        <p class="live-claim-hint"><span class="live-claim-tag">Try it live</span> paste something Verity told a prospect &mdash; watch the harness check the one you just typed.</p>
+        {# typed claims are presenter-scripted in EVERY mode (see /stream/improve) — say so #}
+        <p class="live-claim-hint"><span class="live-claim-tag">Screen an output</span> paste something Verity told a prospect &mdash; the verdict here is a <strong>scripted</strong> replay keyed to the category you pick, not a live judgment of your text.</p>
         <textarea name="claim" rows="2" required maxlength="600"
                   placeholder="A claim the agent made — e.g. &ldquo;Our SOC 2 report covers all five trust criteria.&rdquo;"></textarea>
         <textarea name="source" rows="2" maxlength="2000"
@@ -75,10 +102,10 @@
     </section>
 
     <aside class="side">
-      {% include "_tree.html" %}
       {% include "_rubric.html" %}
-      {% include "_score.html" %}
-      {% include "_gold.html" %}
+      {% include "_teachpanel.html" %}
+      {% include "_goldkey.html" %}
+      {% include "_tree.html" %}
     </aside>
   </main>
 

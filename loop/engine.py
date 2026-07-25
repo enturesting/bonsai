@@ -24,6 +24,7 @@ from store.models import AUTOutput, Check
 
 from . import llm
 from .checker import run_check
+from .grower import GrowReport, grow_report
 
 REWRITE_SYS = (
     "You are improving an eval rubric check so it reliably catches a class of "
@@ -101,6 +102,52 @@ async def _green_count_async(check: Check, pool: list[AUTOutput]) -> int:
     return sum(1 for v in verdicts if v.passed)
 
 
+async def _green_count_rubric_async(rubric: list[Check], pool: list[AUTOutput]) -> int:
+    """Green-count under a MULTI-check rubric: an item is green only when EVERY
+    check passes it (eval.scoring's rubric semantics — additive checks can only
+    tighten). All (item × check) verdicts run concurrently on threads."""
+    grid = await asyncio.gather(
+        *(asyncio.to_thread(run_check, c, o.claim, o) for o in pool for c in rubric)
+    )
+    k = len(rubric)
+    return sum(1 for i in range(len(pool)) if all(v.passed for v in grid[i * k : (i + 1) * k]))
+
+
+# The most recent grow report per claim. The /tree lineage route reuses the
+# click's actual mint story instead of re-running grow (which would mint and
+# possibly persist a SECOND check per improve). Process-wide display cache,
+# mirroring /web's RUBRIC pattern; keys are the finite fixture pool ids.
+_LAST_GROW: dict[str, GrowReport] = {}
+
+
+def last_grow_report(claim_id: str) -> GrowReport | None:
+    """The GrowReport eval_stream produced for this claim's most recent improve."""
+    return _LAST_GROW.get(claim_id)
+
+
+def reset_grow_reports() -> None:
+    """Clear the per-claim grow-report cache (demo reset)."""
+    _LAST_GROW.clear()
+
+
+async def _grow_from_miss(output: AUTOutput, check: Check) -> GrowReport:
+    """The REAL grow path for a confirmed miss: cluster the failure store around
+    this claim → mint one general check → is_general gate → persist if gated.
+
+    Any seam failure (Atlas/Voyage unreachable, model error) degrades to a report
+    with `error` set: the improve stream must never die because minting couldn't
+    reach the failure store, and the miss must be reported, not hidden.
+    """
+    try:
+        db = store.get_db()
+        # Cluster around the claim that just slipped through (grow seeds off
+        # negative_example) so the minted check generalizes THIS failure's class.
+        seed = check.model_copy(update={"negative_example": output.claim or check.negative_example})
+        return await grow_report(seed, db)
+    except Exception as exc:  # noqa: BLE001 — degrade honestly, never kill the stream
+        return GrowReport(error=str(exc))
+
+
 # ── frozen public surface ────────────────────────────────────────────────────
 async def _rewrite_tokens(output: AUTOutput, check: Check):
     """Stream the Opus rule-rewrite over an ALREADY-resolved (output, check), so
@@ -140,6 +187,12 @@ async def eval_stream(claim_id: str):
     count, the rule rewrite, the re-check, and the after count — so the green/red
     pill and the score's after-count derive from the same generation (coherent
     honesty numbers) and one click costs one pool pass, not three.
+
+    A RED re-check (confirmed failure) also drives the REAL grow path —
+    cluster→mint→is_general→persist via _grow_from_miss — and the after-count is
+    taken over the rubric WITH the minted check, so the score reflects the rubric
+    as it now actually stands. The mint story rides the score event's additive
+    `mint` field (None when the click cleared a false positive: nothing to mint).
     """
     try:
         output, check, pool = await _context(claim_id)
@@ -156,14 +209,32 @@ async def eval_stream(claim_id: str):
             yield {"event": "chunk", "data": {"token": token}}
 
         new_check = _apply_rule(check, rule_text)
-        passed = run_check(new_check, output.claim, output).passed
-        yield _pill(claim_id, "green" if passed else "red", "GREEN" if passed else "RED")
+        passed = (await asyncio.to_thread(run_check, new_check, output.claim, output)).passed
+        # The pill judges the ANSWER (supported or caught) — never the harness.
+        yield _pill(claim_id, "green" if passed else "red", "SUPPORTED" if passed else "CAUGHT")
 
-        after = await _green_count_async(new_check, pool)
+        # Confirmed failure → the real grow path (cluster→mint→gate→persist).
+        # A GREEN re-check cleared a false positive: no failure to generalize.
+        if not passed:
+            report = await _grow_from_miss(output, new_check)
+            _LAST_GROW[claim_id] = report  # the lineage route shows THIS mint
+        else:
+            report = GrowReport()
+        rubric = [new_check] + ([report.minted] if report.minted else [])
+        after = await _green_count_rubric_async(rubric, pool)
         lo, hi = _wilson(after, n)
         yield {
             "event": "score",
-            "data": {"passed": passed, "before": before, "after": after, "n": n, "ci": [lo, hi]},
+            "data": {
+                "passed": passed,
+                "before": before,
+                "after": after,
+                "n": n,
+                "ci": [lo, hi],
+                # additive field (CONTRACTS §2, 2026-07-02): the mint story for a
+                # confirmed failure; None when there was nothing to mint from.
+                "mint": report.as_event_data() if not passed else None,
+            },
         }
         yield {"event": "done", "data": {}}
     except asyncio.CancelledError:

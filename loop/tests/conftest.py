@@ -65,6 +65,33 @@ def fake_client():
     return _make
 
 
+@pytest.fixture(autouse=True)
+def _no_network_mint(request, monkeypatch):
+    """eval_stream's red path now drives the REAL grow seam (_grow_from_miss →
+    Atlas + Voyage + the model). A local .env can carry live keys, so unit tests
+    must never reach it: default the seam to an inert empty report. A test that
+    exercises the seam itself opts out by requesting `real_grow_seam`."""
+    from loop import engine
+
+    engine._LAST_GROW.clear()  # per-claim grow-report cache must not leak between tests
+    if "real_grow_seam" in request.fixturenames:
+        yield
+        return
+    from loop.grower import GrowReport
+
+    async def _inert(output, check):
+        return GrowReport()
+
+    monkeypatch.setattr(engine, "_grow_from_miss", _inert)
+    yield
+
+
+@pytest.fixture
+def real_grow_seam():
+    """Opt out of the autouse _no_network_mint guard (test patches its own seams)."""
+    return None
+
+
 @pytest.fixture
 def patch_llm(monkeypatch):
     """Install a FakeClient as the singleton Anthropic client for loop.llm."""

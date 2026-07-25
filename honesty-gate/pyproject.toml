@@ -1,0 +1,37 @@
+# honesty-gate — a build-failing lint (not a sandbox) for self-improving systems,
+# plus a Wilson receipt that never renders improvement as a bare percent.
+#
+# NOT PUBLISHED anywhere. Vendored/standalone use only for now: the pytest11
+# entry point below only registers globally on `pip install`; an uninstalled
+# checkout loads the plugin explicitly with `-p honesty_gate.plugin`.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "honesty-gate"
+version = "0.1.0"
+description = "Build-failing lint proving a self-improving system's source never references its held-out answer key, plus a Wilson-interval receipt formatter (direction + 95% CI, never a bare percent)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    # the importable seam (honesty_gate.checker / honesty_gate.receipt) is
+    # stdlib-only; pytest is needed for the plugin entrypoint this package ships.
+    "pytest>=7.0",
+]
+
+[project.entry-points.pytest11]
+honesty_gate = "honesty_gate.plugin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+# Self-contained test run: `python -m pytest` from THIS directory. This section
+# also pins rootdir here, so the run never falls through to a parent repo's
+# pytest.ini / testpaths.
+testpaths = ["tests"]
+# no .pytest_cache dir inside the package checkout
+addopts = "-p no:cacheprovider"

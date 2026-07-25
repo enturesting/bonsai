@@ -37,7 +37,12 @@ def render_chunk(data: dict) -> str:
 
 
 def render_score(data: dict) -> str:
-    return json.dumps(data)
+    # JSON, HTML-entity-escaped: the wire target (#score-raw) is an innerHTML
+    # swap, so the browser PARSES this string as HTML before main.js reads it
+    # back via textContent (which decodes entities → the exact JSON). Unescaped,
+    # a model-minted property containing e.g. "<value>" would be eaten as markup
+    # and silently corrupt the score payload.
+    return str(escape(json.dumps(data)))
 
 
 def render_done(data: dict) -> str:

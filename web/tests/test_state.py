@@ -70,3 +70,24 @@ def test_reset_returns_to_seed_only():
     r.record_growth("c1", True)
     r.reset()
     assert len(r.branches()) == 1
+
+
+# ── owner requirements (◆ intake rows — display state, Increment 2) ──────────
+def test_record_requirement_rows_and_reset():
+    r = Rubric()
+    r.record_requirement("No invented prices.", "Quoted prices must appear in the price book.",
+                         gated=None, source="typed")
+    rows = r.requirements()
+    assert rows == [{"text": "No invented prices.",
+                     "property": "Quoted prices must appear in the price book.",
+                     "gated": None, "source": "typed"}]
+    r.reset()
+    assert r.requirements() == []
+
+
+def test_record_requirement_keeps_gate_verdict():
+    r = Rubric()
+    r.record_requirement("std", "prop", gated=True, source="live")
+    r.record_requirement("std2", "prop2", gated=False, source="live")
+    gates = [row["gated"] for row in r.requirements()]
+    assert gates == [True, False]

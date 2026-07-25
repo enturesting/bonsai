@@ -69,6 +69,19 @@ def test_mint_check_from_miss_builds_failure_from_output(monkeypatch):
     assert f.id  # a stable, non-empty slug
 
 
+# ── mint_check_from_standard (owner intake) ──────────────────────────────────
+def test_mint_check_from_standard_builds_check_from_plain_english(patch_llm, fake_client):
+    minted = a_check(id="whatever-the-model-said")
+    client = patch_llm(fake_client(parsed=[minted]))
+    res = grower.mint_check_from_standard("Never quote a price that isn't in the current price book.")
+    body = client.messages.parse_calls[0]["messages"][0]["content"]
+    assert "price book" in body
+    assert client.messages.parse_calls[0]["output_format"] is Check
+    # deterministic, owner-derived id — never the model's own choice
+    assert res.id.startswith("std-never-quote-a-price")
+    assert res.property == minted.property
+
+
 # ── is_general gate ──────────────────────────────────────────────────────────
 def _discriminating_run_check(check, claim, output):
     # pass when the output cites the claim, fail otherwise (numeric/unsupported)
@@ -118,7 +131,8 @@ async def test_grow_mints_and_upserts_when_general(monkeypatch):
     upserts = []
     _install_store(monkeypatch, cluster=[a_failure("f1"), a_failure("f2")], known_good=[passer()], upserts=upserts)
     monkeypatch.setattr(grower, "mint_check", lambda f: minted)
-    monkeypatch.setattr(grower, "is_general", lambda c, kg, cf: True)
+    # the real gate rule runs: known-good pass (has sources), both failures caught
+    monkeypatch.setattr(grower, "run_check", _discriminating_run_check)
     res = await grow(a_check(), db=object())
     assert res is minted
     assert upserts == [minted]  # persisted to the rubric store
@@ -128,7 +142,9 @@ async def test_grow_returns_none_and_does_not_upsert_when_overfit(monkeypatch):
     upserts = []
     _install_store(monkeypatch, cluster=[a_failure("f1"), a_failure("f2")], known_good=[passer()], upserts=upserts)
     monkeypatch.setattr(grower, "mint_check", lambda f: a_check("grown"))
-    monkeypatch.setattr(grower, "is_general", lambda c, kg, cf: False)
+    # overfit candidate: it wrongly fails the known-good item → gate rejects
+    monkeypatch.setattr(grower, "run_check",
+                        lambda c, claim, o: Verdict(passed=False, confidence=1.0, reason=""))
     res = await grow(a_check(), db=object())
     assert res is None
     assert upserts == []
@@ -140,3 +156,46 @@ async def test_grow_returns_none_on_empty_cluster(monkeypatch):
     monkeypatch.setattr(grower, "mint_check", lambda f: (_ for _ in ()).throw(AssertionError("no mint on empty")))
     res = await grow(a_check(), db=object())
     assert res is None
+
+
+# ── grow_report (the display-friendly story eval_stream consumes) ────────────
+async def test_grow_report_gated_carries_counts_and_persists(monkeypatch):
+    minted = a_check("grown")
+    upserts = []
+    _install_store(monkeypatch, cluster=[a_failure("f1"), a_failure("f2"), a_failure("f3")],
+                   known_good=[passer("a"), passer("b")], upserts=upserts)
+    monkeypatch.setattr(grower, "mint_check", lambda f: minted)
+    monkeypatch.setattr(grower, "run_check", _discriminating_run_check)
+    rep = await grower.grow_report(a_check(), db=object())
+    assert rep.minted is minted and rep.gated is True
+    assert rep.cluster_size == 3 and rep.caught_siblings == 3 and rep.n_known_good == 2
+    assert upserts == [minted]
+    data = rep.as_event_data()
+    assert data["attempted"] is True and data["gated"] is True
+    assert data["id"] == "grown" and data["property"] == minted.property
+
+
+async def test_grow_report_rejected_keeps_candidate_visible(monkeypatch):
+    """A gate-rejected mint must stay visible (candidate + why) — the UI shows the
+    rejection honestly instead of pretending nothing happened."""
+    candidate = a_check("overfit-draft")
+    upserts = []
+    _install_store(monkeypatch, cluster=[a_failure("f1"), a_failure("f2")],
+                   known_good=[passer()], upserts=upserts)
+    monkeypatch.setattr(grower, "mint_check", lambda f: candidate)
+    monkeypatch.setattr(grower, "run_check",
+                        lambda c, claim, o: Verdict(passed=False, confidence=1.0, reason=""))
+    rep = await grower.grow_report(a_check(), db=object())
+    assert rep.minted is None and rep.gated is False
+    assert rep.candidate is candidate
+    assert upserts == []
+    data = rep.as_event_data()
+    assert data["attempted"] is True and data["gated"] is False
+    assert data["property"] == candidate.property
+
+
+async def test_grow_report_empty_cluster_is_inert(monkeypatch):
+    _install_store(monkeypatch, cluster=[], known_good=[], upserts=[])
+    rep = await grower.grow_report(a_check(), db=object())
+    assert rep.minted is None and rep.candidate is None and rep.error is None
+    assert rep.as_event_data()["attempted"] is False

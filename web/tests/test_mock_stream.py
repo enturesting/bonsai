@@ -62,7 +62,30 @@ async def test_error_path_emits_error_then_done(monkeypatch):
 async def test_score_shape_counts_and_wilson_ci(fake_questions):
     events = await _collect("clean-numeric-01")
     data = [d for d in events if d["event"] == "score"][0]["data"]
-    assert set(data) == {"passed", "before", "after", "n", "ci"}
+    assert set(data) == {"passed", "before", "after", "n", "ci", "mint"}
     lo, hi = data["ci"]
     assert 0.0 <= lo <= hi <= 1.0
     assert isinstance(data["before"], int) and isinstance(data["n"], int)
+    assert data["mint"] is None  # cleared false positive — nothing to mint
+
+
+def test_mock_mint_keys_match_the_real_grow_report_shape():
+    """The scripted _mock_mint and the real GrowReport.as_event_data are hand-kept
+    in the same shape (one renderMintNote consumes both) — pin the parity."""
+    from loop.grower import GrowReport
+    from web.mock_stream import _mock_mint
+
+    assert set(_mock_mint("unsupported-numeric", [])) == set(GrowReport().as_event_data())
+
+
+async def test_failure_score_carries_scripted_mint_story(fake_questions):
+    """Mirrors the real eval_stream's additive mint field: a confirmed failure
+    reports the minted check + the is_general rule applied to the scripted
+    cluster. The 2-question fake pool has ONE failure → honestly gated=False."""
+    events = await _collect("numeric-mismatch-01")
+    mint = [d for d in events if d["event"] == "score"][0]["data"]["mint"]
+    assert mint["attempted"] is True
+    assert mint["id"] == "minted-unsupported-numeric"
+    assert "cite a source" in mint["property"]
+    assert mint["caught_siblings"] == 1 and mint["gated"] is False
+    assert mint["n_known_good"] == 1 and mint["error"] is None

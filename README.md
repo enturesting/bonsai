@@ -29,7 +29,7 @@ The agent's answer now passes a check that **didn't exist five seconds ago.** Th
 
 ## TL;DR
 
-Evals are the bottleneck on safe autonomy: writing them is manual, they go stale, and nobody trusts them. **Bonsai is a self-improving eval harness** for cited-answer agents. It runs an agent-under-test (Gemini 3.5), catches claims that lack a verbatim supporting quote in their cited source, clusters those failures by embedding (MongoDB Atlas `$vectorSearch` over Voyage vectors), and **mints a new general check** for each kind of mistake — keeping it only if it passes *every* known-good answer and catches *≥2 distinct* sibling failures. It autonomously grows and prunes this rubric over a mutable working pool, then reports whether it actually improved as **direction + a Wilson confidence interval against a frozen, human-authored gold set the improving loop is build-time-provably unable to read.** It is a *harness* — a checking loop — not retrieval-augmented generation.
+Evals are the bottleneck on safe autonomy: writing them is manual, they go stale, and nobody trusts them. **Bonsai is a self-improving eval harness** for cited-answer agents. It runs an agent-under-test (Gemini 3.5), catches claims that lack a verbatim supporting quote in their cited source, clusters those failures by embedding (MongoDB Atlas `$vectorSearch` over Voyage vectors), and **mints a new general check** for each kind of mistake — keeping it only if it passes *every* known-good answer and catches *≥2 distinct* sibling failures. It autonomously grows and prunes this rubric over a mutable working pool, then reports whether it actually improved as **direction + a Wilson confidence interval against a frozen, human-authored gold set the improving loop is barred from reading by a build-failing lint.** It is a *harness* — a checking loop — not retrieval-augmented generation.
 
 ---
 
@@ -58,9 +58,9 @@ Bonsai is a **harness** (a test rig — not "RAG") that watches an AI answer-bot
 Two things, and the second is the wedge:
 
 1. **Autonomy.** The loop catches a failure → clusters siblings via Atlas Vector Search → mints a *general* check (`is_general` gate) → grows and prunes the rubric — all without a human in the loop, all over a **working pool**.
-2. **A frozen-gold honesty gate.** The set the rubric is *scored against* is human-authored, frozen, and **architecturally unreadable by the improving loop**. `/loop` contains zero references to `/eval/gold` — and that's enforced by a test that **fails the build** if it ever does (`eval/tests/test_honesty_gate.py`).
+2. **A frozen-gold honesty gate.** The set the rubric is *scored against* is human-authored, frozen, and **barred from the improving loop by a build-failing lint**. `/loop` contains zero references to `/eval/gold` — and that's enforced by a test that **fails the build** if one ever appears (`eval/tests/test_honesty_gate.py`, in the default test run and CI).
 
-That separation is the point. Lots of systems generate evals. Bonsai is the one that can **prove the improver didn't cheat** — because the improver and the judge are physically separated, and improvement is reported as a direction-plus-interval, never a bare percentage.
+That separation is the point. Lots of systems generate evals. Bonsai is the one built so the improver **has no naive code path to fit to its own judge** — the improver and the judge are separated by a build-failing lint (a lint, not a sandbox), and improvement is reported as a direction-plus-interval, never a bare percentage.
 
 > **One-sentence novelty claim:** *To our knowledge, Bonsai is the first eval-generation system to make honesty a build-checked discipline — a CI test fails the build if its autonomous, failure-clustered check-minting loop ever references the frozen gold set it is scored against (`import eval`, `eval/gold`, `load_gold`), so every reported improvement is a direction-plus-confidence-interval against a reference the loop has no naive path to fit to.*
 
@@ -68,7 +68,7 @@ Prior art generates evals (EvalGen, AutoChecklist, LangSmith Engine, ProbeLLM, S
 
 ### What "frozen gold" is — and where it goes
 
-**Today** it's a small (15-item), human-authored, held-out reference of correct/incorrect answers the improving loop is *build-time-provably* unable to read — a CI test fails the build if `/loop` ever touches `eval/gold`. It scores exactly one thing: whether the loop's self-improvement **agrees with human judgment** — direction, counts, and a Wilson 95% CI, never a bare %. Agreement isn't proof of honesty; it's an independent check the loop can't game.
+**Today** it's a small (15-item), human-authored, held-out reference of correct/incorrect answers the improving loop is barred from reading — a CI test fails the build if `/loop` ever references `eval/gold`. It scores exactly one thing: whether the loop's self-improvement **agrees with human judgment** — direction, counts, and a Wilson 95% CI, never a bare %. Agreement isn't proof of honesty; it's an independent check the loop has no naive path to game.
 
 **In production**, each gold set is owned by a **domain contract owner** — the compliance lead, security reviewer, or legal/policy expert accountable for "what good looks like." They define the held-out truth; the harness autonomously grows the checks. Separation of powers: the **domain expert defines truth, the loop improves coverage.**
 
@@ -115,6 +115,8 @@ flowchart TB
 ```
 
 **Built, wired, and deployed:** real keys wired, **Atlas `$vectorSearch` indexed (`failvec`) and live-verified** (a real query returned a genuine `vectorSearchScore` over real Voyage vectors), the **eval loop wired to Gemini 3.5 via Vertex** (agent-under-test *and* checker *and* grower — no Anthropic needed; the AUT is **verified live** via `scripts/gemini_live.py`), clustering visible in the UI, and **deployed to DigitalOcean** (link at top). The recorded demo runs the deterministic mock (the bulletproof spine) for determinism. The frozen gold set is human-authored and version-controlled (amendable per item) — that discipline *is* the honesty rail.
+
+**As of 2026-07-02, the pitch is true in the live path too:** on a wired box, clicking **Improve** on a confirmed failure drives the full grow cycle *inside the stream* — cluster (`$vectorSearch`) → mint → `is_general` gate → the new check **persisted to the rubric** — and the score you see is computed over the rubric *including* the freshly gated-in check (the mint story rides the SSE `score` event and is labeled `scripted` on the keyless mock). The frozen-gold receipt on the dashboard is precomputed at page load; on a wired box a **Verify now** button rescores the held-out set live against the current rubric. The keyless deployed demo keeps the scripted mock and the stored receipt, labeled as such.
 
 ### Target state — the self-improving loop + the moat
 

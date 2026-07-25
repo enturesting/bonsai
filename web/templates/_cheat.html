@@ -1,0 +1,33 @@
+{# "Try to cheat it" station — runs the REAL honesty-gate lint (eval.honesty),
+   the same functions eval/tests/test_honesty_gate.py fails the CI build on.
+   The verdict shown is ALWAYS the real lint outcome over this box's loop/
+   source, computed on this render — a static scan needs no model and no keys,
+   so it is real even on the scripted demo box. #}
+<details class="cheat-station" id="cheat-station">
+  <summary>Try to cheat it <span class="hint">the exact check CI runs, running now</span></summary>
+  <p class="cheat-live">
+    {% if honesty_lint.clean %}
+    <span class="cheat-verdict cheat-verdict--clean">&#10003; PASSING</span>
+    scanned {{ honesty_lint.files_scanned }} <code>loop/</code> source files on this box just now &mdash; none reference the gold answer key or the <code>eval</code> package.
+    {% else %}
+    <span class="cheat-verdict cheat-verdict--caught">&#10005; LEAK</span>
+    {{ honesty_lint.offenders|length }} of {{ honesty_lint.files_scanned }} <code>loop/</code> source files reference gold/eval ({% for path, hits in honesty_lint.offenders %}<code>{{ path }}</code>{% if not loop.last %}, {% endif %}{% endfor %}) &mdash; in CI this fails the build.
+    {% endif %}
+  </p>
+  <p class="cheat-scope">This is <strong>a lint, not a sandbox</strong> &mdash; a static scan of the loop&rsquo;s source for gold/eval references (comments count). It proves the loop&rsquo;s shipping code doesn&rsquo;t reference the held-out answer key &mdash; nothing more: a guardrail check, not an unbreakable wall.</p>
+  <form class="cheat-form" hx-post="/cheat" hx-target="#cheat-result" hx-swap="innerHTML">
+    <textarea name="snippet" rows="3" maxlength="2000"
+              placeholder="Write a would-be loop/ snippet &mdash; e.g. try importing the gold set&hellip;"></textarea>
+    <div class="cheat-row">
+      <span class="cheat-hint">example snippets are linted as text through the real checker &mdash; nothing here modifies the repo</span>
+      <button type="submit" class="btn btn--improve">Lint it &rarr;</button>
+    </div>
+    <div class="cheat-chips">
+      <span class="live-examples-label">or lint a canned cheat attempt:</span>
+      {% for key, snip in canned_cheats.items() %}
+      <button type="submit" class="ex-chip" name="canned" value="{{ key }}">{{ snip.label }}</button>
+      {% endfor %}
+    </div>
+  </form>
+  <div id="cheat-result"></div>
+</details>

@@ -71,12 +71,16 @@ def _env(monkeypatch):
     from web.state import RUBRIC
     from web.live_claims import LIVE
 
+    import loop
+
     RUBRIC.reset()
     LIVE.reset()
+    loop.reset_grow_reports()
     yield
     get_settings.cache_clear()
     RUBRIC.reset()
     LIVE.reset()
+    loop.reset_grow_reports()
 
 
 @pytest.fixture

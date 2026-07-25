@@ -24,11 +24,30 @@
       <div class="check-body">
         <div class="check-line">
           <span class="check-name">Rooted standard</span>
-          <span class="check-tag">the contract you started from</span>
+          <span class="prov prov--owner" title="authored by the domain owner">&#9670; owner standard</span>
         </div>
+        <div class="check-mint hint">the contract you started from</div>
         <div class="check-prop">Every numeric claim has a verbatim supporting quote in a cited source.</div>
       </div>
     </li>
+
+    {# ── owner-taught requirements (◆) — gate verdict always real, never faked ── #}
+    {% for r in requirements %}
+    <li class="check check--req">
+      <span class="check-dot dot--seed"></span>
+      <div class="check-body">
+        <div class="check-line">
+          <span class="check-name">Owner requirement</span>
+          <span class="prov prov--owner" title="authored by the domain owner">&#9670; owner standard</span>
+          {% if r.gated is true %}<span class="check-status status--active">&#10003; active</span>
+          {% elif r.gated is false %}<span class="check-status status--watching">&#10005; gate-rejected</span>
+          {% else %}<span class="check-status status--watching">watching &middot; unverified</span>{% endif %}
+        </div>
+        <div class="check-prop">{{ r.property }}</div>
+        {% if r.text != r.property %}<div class="check-mint hint">from: &ldquo;{{ r.text }}&rdquo;</div>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
 
     {# ── one row per minted failure-family check ── #}
     {% for c in checks %}
@@ -40,7 +59,7 @@
           {% if c.version > 1 %}<span class="ver-chip" title="sharpened by {{ c.version }} distinct failures">v{{ c.version }}</span>{% endif %}
           <span class="check-status status--{{ c.status }}">{{ '✓ active' if c.status == 'active' else 'watching' }}</span>
         </div>
-        <div class="check-mint hint">minted from {{ c.minted_from }} failure{{ '' if c.minted_from == 1 else 's' }}</div>
+        <div class="check-mint hint"><span class="prov prov--grown" title="born from a caught failure — not hand-written">&#127793; grown from {{ c.minted_from }} catch{{ '' if c.minted_from == 1 else 'es' }}</span></div>
         <div class="check-prop">{{ c.property }}</div>
         {% if c.diff %}
         <div class="check-diff">

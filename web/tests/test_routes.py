@@ -24,6 +24,35 @@ def test_dashboard_score_panel_shows_counts_and_wilson_ci(client):
     assert "95% CI [" in body
 
 
+def test_mode_chip_says_scripted_on_a_mock_box(client):
+    # WEB_MOCK_STREAM=1 (conftest) → the chip must state the TRUE mode: scripted.
+    body = client.get("/").text
+    assert "mode-chip--mock" in body
+    assert "demo mode &mdash; scripted mock" in body
+    # the screen-an-output hint points at the wired live path (copy only, no link).
+    assert "a wired live box screens outputs for real" in body
+    # honest provenance: the fixtures are hand-authored designed failures —
+    # nothing was recorded or frozen from a real model run.
+    assert "hand-authored fixtures" in body
+    assert "recorded run" not in body
+    assert "frozen into fixtures" not in body
+    # a mock box must never wear the live chip.
+    assert "mode-chip--live" not in body
+
+
+def test_mode_chip_states_live_mode_on_a_keyed_box(client, monkeypatch):
+    # key present + mock override off → use_mock() is False → the live chip renders.
+    monkeypatch.setenv("WEB_MOCK_STREAM", "0")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "live-key")
+    body = client.get("/").text
+    assert "mode-chip--live" in body
+    assert "live mode &mdash; real model + gate" in body
+    # no scripted-demo labeling may leak onto a live box's chip or hero hint.
+    assert "mode-chip--mock" not in body
+    assert "scripted mock" not in body
+    assert "mode-hint" not in body
+
+
 def test_run_mints_pill_skeleton_keyed_by_fixture_id(client):
     r = client.post("/run")
     assert r.status_code == 200

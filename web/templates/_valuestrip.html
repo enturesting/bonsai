@@ -1,0 +1,24 @@
+{# compact by design: the page's vertical budget is tight — the claims board and
+   rubric must peek above the fold on a 900px-tall laptop screen #}
+<section id="value-strip" class="value-strip" hx-get="/fragment/value-strip"
+         hx-trigger="grow from:body" hx-swap="outerHTML">
+  <div class="value-tiles">
+    <a class="vtile" href="#rubric">
+      <span class="vtile-n">{{ n_checks }}</span>
+      <span class="vtile-l">check{{ '' if n_checks == 1 else 's' }} in the rubric</span>
+    </a>
+    <a class="vtile" href="#rubric">
+      <span class="vtile-n">{{ maturity.covered }} of {{ maturity.total }}</span>
+      <span class="vtile-l">failure families covered</span>
+    </a>
+    <a class="vtile" href="#gold-panel">
+      {% if gold_result %}
+      <span class="vtile-n">{{ gold_result.after }}/{{ gold_result.n }}</span>
+      <span class="vtile-l">honesty receipt &middot; held-out agreement</span>
+      {% else %}
+      <span class="vtile-n">&mdash;</span>
+      <span class="vtile-l">honesty receipt</span>
+      {% endif %}
+    </a>
+  </div>
+</section>

@@ -1,0 +1,19 @@
+{% if mode == "live" and gated %}
+<div class="teach-card teach-card--admitted">
+  <div class="teach-verdict">&#10010; ADMITTED &mdash; passed the generality gate</div>
+  <div class="teach-prop">&ldquo;{{ check.property }}&rdquo;</div>
+  <div class="teach-meta">tested against {{ n_known_good }} known-good answers (passed all) &middot; caught {{ caught }} sibling failure{{ '' if caught == 1 else 's' }} &middot; persisted to the rubric</div>
+</div>
+{% elif mode == "live" %}
+<div class="teach-card teach-card--rejected">
+  <div class="teach-verdict">&#10005; REJECTED by the generality gate (caught {{ caught }}, needs &ge;2)</div>
+  <div class="teach-prop">&ldquo;{{ check.property }}&rdquo;</div>
+  <div class="teach-meta">too narrow to police a family yet &mdash; sharpen the standard, or add an example of the mistake it should catch. A rejection is the gate working.</div>
+</div>
+{% else %}
+<div class="teach-card teach-card--unverified">
+  <div class="teach-verdict">&#9670; recorded &mdash; unverified</div>
+  <div class="teach-prop">&ldquo;{{ standard }}&rdquo;</div>
+  <div class="teach-meta">won&rsquo;t catch anything yet &mdash; a live box (model + failure store) runs the generality gate before this can police a screened output{% if error %} &middot; seam error: {{ error }}{% endif %}</div>
+</div>
+{% endif %}

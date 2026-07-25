@@ -13,10 +13,10 @@ from web import sse
 
 
 def test_render_pill_uses_check_id_as_dom_id_and_keeps_sse_swap():
-    html = sse.render_pill({"color": "green", "check_id": "numeric-mismatch-01", "label": "GREEN"})
+    html = sse.render_pill({"color": "green", "check_id": "numeric-mismatch-01", "label": "SUPPORTED"})
     assert 'id="pill-numeric-mismatch-01"' in html
     assert "pill--green" in html
-    assert ">GREEN<" in html
+    assert ">SUPPORTED<" in html
     # MUST re-declare sse-swap so the green pill is still a target after the
     # yellow pill's outerHTML swap replaced the original element.
     assert 'sse-swap="pill"' in html
@@ -29,8 +29,27 @@ def test_render_chunk_escapes_html():
 
 
 def test_render_score_is_json_string_of_data():
+    # The wire form is HTML-entity-escaped (the #score-raw target is an innerHTML
+    # swap); the browser's textContent read decodes it — html.unescape simulates.
+    import html
+
     data = {"passed": True, "before": 2, "after": 3, "n": 5, "ci": [0.34, 0.9]}
-    assert json.loads(sse.render_score(data)) == data
+    assert json.loads(html.unescape(sse.render_score(data))) == data
+
+
+def test_render_score_survives_html_in_minted_property():
+    """A model-minted property like "<value>" must not ride the wire as raw
+    markup — innerHTML would swallow it and corrupt the JSON main.js parses."""
+    import html
+
+    data = {"passed": False, "before": 2, "after": 1, "n": 3, "ci": [0.1, 0.9],
+            "mint": {"attempted": True, "gated": True, "id": "m",
+                     "property": 'Claims like "<value> within <n> days" must cite a source.',
+                     "cluster_size": 2, "caught_siblings": 2, "n_known_good": 1,
+                     "error": None, "source": "loop"}}
+    wire = sse.render_score(data)
+    assert "<" not in wire and ">" not in wire  # nothing the HTML parser can eat
+    assert json.loads(html.unescape(wire)) == data
 
 
 def test_to_sse_maps_event_name_and_renders_data():
@@ -48,7 +67,7 @@ def test_to_sse_done_is_empty():
 async def _fake_stream(claim_id):
     yield {"event": "pill", "data": {"color": "yellow", "check_id": claim_id, "label": "CHECKING…"}}
     yield {"event": "chunk", "data": {"token": "Numeric "}}
-    yield {"event": "pill", "data": {"color": "green", "check_id": claim_id, "label": "GREEN"}}
+    yield {"event": "pill", "data": {"color": "green", "check_id": claim_id, "label": "SUPPORTED"}}
     yield {"event": "score", "data": {"passed": True, "before": 1, "after": 2, "n": 3, "ci": [0.1, 0.9]}}
     yield {"event": "done", "data": {}}
 

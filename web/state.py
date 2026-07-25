@@ -40,14 +40,36 @@ class Rubric:
         # (claim_id, passed, category) in insertion order. category powers the
         # maturation panel; branches() ignores it (the tree shape is unchanged).
         self._growth: list[tuple[str, bool, str]] = []
+        # owner-authored requirements (◆ intake rows): display state only —
+        # minting/gating happens in /loop; this remembers what the owner taught.
+        self._requirements: list[dict] = []
 
     def record_growth(self, claim_id: str, passed: bool, category: str = "") -> None:
         """Sprout/replace the branch for this claim (latest improve wins)."""
         self._growth = [(c, p, cat) for (c, p, cat) in self._growth if c != claim_id]
         self._growth.append((claim_id, bool(passed), category))
 
+    def record_requirement(self, text: str, prop: str, *, gated: bool | None,
+                           source: str) -> None:
+        """Remember an owner-taught requirement. gated=True/False is the real
+        is_general verdict from a live box; None means 'recorded, unverified'.
+        Re-teaching the same standard REPLACES the row (latest verdict wins),
+        mirroring record_growth — the keyed store already de-dupes by check id,
+        so the display must too or the value strip double-counts."""
+        key = " ".join(text.lower().split())
+        self._requirements = [
+            r for r in self._requirements if " ".join(r["text"].lower().split()) != key
+        ]
+        self._requirements.append(
+            {"text": text, "property": prop, "gated": gated, "source": source}
+        )
+
+    def requirements(self) -> "list[dict]":
+        return list(self._requirements)
+
     def reset(self) -> None:
         self._growth = []
+        self._requirements = []
 
     def branches(self) -> list[dict]:
         """Seed branch + one branch per recorded improve, with drawable coords."""

@@ -1,17 +1,46 @@
-{% if gold_result %}
-<section class="panel gold-panel">
+{% if gold_result or can_verify %}
+<section class="panel gold-panel" id="gold-panel">
   <h2>Honesty receipt <span class="hint">the real, held-out score</span></h2>
-  <div class="receipt-eyebrow gold-eyebrow">frozen gold &middot; {{ gold_result.n }} held-out items the loop can&rsquo;t read &middot; fixed, not live</div>
+  {% if gold_result %}
+  {% set delta = gold_result.after - gold_result.before %}
+  {# the eyebrow names the SET the shown numbers were computed on: "frozen gold" only
+     when it truly was frozen-only — a live rescore that included owner-added items
+     must say so, or the grown denominator poses as the frozen set #}
+  <div class="receipt-eyebrow gold-eyebrow">{% if gold_result.n_owner %}held-out gold &middot; {{ gold_result.n_frozen }} frozen + {{ gold_result.n_owner }} owner-added item{{ '' if gold_result.n_owner == 1 else 's' }} the loop can&rsquo;t read &middot; {% else %}frozen gold &middot; {{ gold_result.n }} held-out items the loop can&rsquo;t read &middot; {% endif %}{% if gold_result.live %}recomputed live just now{% else %}precomputed, fixed &mdash; not live{% endif %}</div>
   <div class="score-display">
     <div class="score-counts">
       <span class="score-before">{{ gold_result.before }}</span>
       <span class="score-arrow">&rarr;</span>
-      <span class="score-after up">{{ gold_result.after }}</span>
+      <span class="score-after{% if delta > 0 %} up{% elif delta < 0 %} down{% endif %}">{{ gold_result.after }}</span>
       <span class="score-of">/ {{ gold_result.n }} agree</span>
     </div>
     <div class="score-ci">95% CI [{{ "%.1f"|format(gold_result.ci[0] * 100) }}%, {{ "%.1f"|format(gold_result.ci[1] * 100) }}%]{% if gold_result.sign_test %} &middot; {{ gold_result.sign_test.helped }} helped, {{ gold_result.sign_test.hurt }} hurt{% endif %}</div>
   </div>
-  <p class="receipt-moat"><strong>{{ gold_result.after - gold_result.before }} more held-out cases</strong> caught than the starting rubric &mdash; scored on an answer key the loop <strong>can&rsquo;t read</strong>, so the gain is real (not self-grading). Each check replaces a test a QA engineer would hand-write and maintain forever.</p>
+  {# direction-aware, or the receipt overclaims in exactly the regression case it exists to expose #}
+  {% if delta > 0 %}
+  <p class="receipt-moat"><strong>{{ delta }} more held-out cases</strong> caught than the starting rubric &mdash; scored on an answer key the loop <strong>can&rsquo;t read</strong>, so the gain is real (not self-grading). Each check replaces a test a QA engineer would hand-write and maintain forever.</p>
+  {% elif delta == 0 %}
+  <p class="receipt-moat"><strong>No change</strong> vs the starting rubric on the held-out set &mdash; the grown rubric hasn&rsquo;t (yet) improved agreement with the human answer key. That is the receipt doing its job: no gain gets claimed that gold can&rsquo;t back.</p>
+  {% else %}
+  <p class="receipt-moat"><strong>{{ -delta }} fewer held-out cases</strong> caught than the starting rubric &mdash; the grown rubric <strong>regressed</strong> against the human answer key. This receipt exists to expose exactly this: the working score can climb while real agreement falls.</p>
+  {% endif %}
+  {% endif %}
+  {% if verify_error %}
+  <p class="verify-error">&#9888; live rescore failed ({{ verify_error }}) &mdash; showing the stored receipt instead.</p>
+  {% endif %}
+  {# owner-added items must never silently change what this receipt claims: when the
+     shown numbers predate them (stored receipt, or a rescore run before the add),
+     say the new items are not in it #}
+  {% if gold_result and not gold_result.n_owner and owner_gold %}
+  <p class="receipt-prov">{{ owner_gold|length }} owner-added item{{ ' is' if owner_gold|length == 1 else 's are' }} <strong>not in this receipt</strong> &mdash; it was computed on the frozen set only. A live rescore (Verify now, on a keyed box) scores them too and labels itself accordingly.</p>
+  {% endif %}
   <p class="receipt-rail">Enforced in CI: a build-failing test (<code>test_loop_never_references_gold_or_eval</code>) blocks the loop from referencing this gold set.</p>
+  {% include "_cheat.html" %}
+  {% if can_verify %}
+  <form class="gold-verify" hx-post="/gold/verify" hx-target="#gold-panel" hx-swap="outerHTML" hx-disabled-elt="find button">
+    <button type="submit" class="btn btn--verify">Verify now &mdash; rescore the held-out set</button>
+    <span class="verify-hint">reruns every gold item under the current rubric (~a minute)</span>
+  </form>
+  {% endif %}
 </section>
 {% endif %}

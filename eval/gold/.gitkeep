@@ -1,3 +1,6 @@
 # Frozen, human-authored gold set lives here as one g-XX.json per item.
 # AUTHORED ON-SITE (Sat 11:30+), one incremental commit each. frozen:true, never edited in place.
-# /loop must NEVER read this directory (see eval/tests/test_honesty_gate.py).
+# Owner-added items (g-owner-*.json, frozen:false, provenance:"owner-added") are written
+# ONLY by /web's copy-verified add path (web/gold.py) and never overwrite anything here.
+# /loop must NEVER read this directory (see eval/tests/test_honesty_gate.py) — the lint
+# bars the whole directory, so owner-added items are held out exactly like frozen ones.

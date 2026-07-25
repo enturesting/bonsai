@@ -124,7 +124,7 @@ async def test_eval_stream_emits_full_lifecycle_in_order(monkeypatch):
     first_pill, c1, c2, last_pill, score, done = events
     assert first_pill["data"] == {"color": "yellow", "check_id": "claim-1", "label": "CHECKING…"}
     assert c1["data"] == {"token": "IF "} and c2["data"] == {"token": "numeric"}
-    assert last_pill["data"]["color"] == "green" and last_pill["data"]["label"] == "GREEN"
+    assert last_pill["data"]["color"] == "green" and last_pill["data"]["label"] == "SUPPORTED"
     assert last_pill["data"]["check_id"] == "claim-1"
     assert done["data"] == {}
 
@@ -160,21 +160,147 @@ async def test_eval_stream_score_shape_counts_and_wilson(monkeypatch):
     _install_eval_stream(monkeypatch, passed=True, pool_green=3, n=4)
     events = await collect(eval_stream("claim-1"))
     score = next(e for e in events if e["event"] == "score")["data"]
-    assert set(score) == {"passed", "before", "after", "n", "ci"}
+    assert set(score) == {"passed", "before", "after", "n", "ci", "mint"}
     assert score["passed"] is True
     assert score["n"] == 4 and score["before"] == 3 and score["after"] == 3
     lo, hi = score["ci"]
     assert (lo, hi) == engine._wilson(3, 4)
     assert isinstance(lo, float) and isinstance(hi, float)
+    # a cleared false positive has no failure to generalize — nothing to mint
+    assert score["mint"] is None
 
 
 async def test_eval_stream_pill_is_red_when_recheck_fails(monkeypatch):
     _install_eval_stream(monkeypatch, passed=False)
     events = await collect(eval_stream("c1"))
     last_pill = [e for e in events if e["event"] == "pill"][-1]
-    assert last_pill["data"]["color"] == "red" and last_pill["data"]["label"] == "RED"
+    assert last_pill["data"]["color"] == "red" and last_pill["data"]["label"] == "CAUGHT"
     score = next(e for e in events if e["event"] == "score")["data"]
     assert score["passed"] is False
+    # a confirmed failure carries the mint story (inert report under the conftest
+    # guard: grow was attempted by the engine, nothing came back to gate in)
+    assert score["mint"] is not None and score["mint"]["gated"] is False
+
+
+# ── eval_stream × the real grow path (cluster→mint→gate→persist) ─────────────
+def _minted_check():
+    return Check(id="minted-unsupported-numeric",
+                 property="Every numeric claim must cite a source containing that figure.",
+                 rationale="r", positive_example="p", negative_example="n", overfit_risk="o")
+
+
+async def test_eval_stream_red_mints_gated_check_into_after_count(monkeypatch):
+    """A confirmed miss mints a new gated check, and the after-count is taken over
+    the rubric WITH it — the minted check tightens the score it reports."""
+    from loop.grower import GrowReport
+
+    minted = _minted_check()
+    pool = [out("ok sneaky"), out("ok plain"), out("bad x")]
+    target = out("bad target")
+
+    async def ctx(cid):
+        return target, a_check("ORIGINAL"), pool
+
+    async def rtoks(output, check):
+        yield "rewritten"
+
+    calls = {}
+
+    async def fake_grow(output, check):
+        calls["output"], calls["check"] = output, check
+        return GrowReport(minted=minted, candidate=minted, gated=True,
+                          cluster_size=3, caught_siblings=2, n_known_good=2)
+
+    def rc(check, claim, output):
+        if check.id == minted.id:  # the minted check also catches the sneaky item
+            return Verdict(passed=("sneaky" not in claim and "ok" in claim), confidence=1.0, reason="")
+        return Verdict(passed=("ok" in claim), confidence=1.0, reason="")
+
+    monkeypatch.setattr(engine, "_context", ctx)
+    monkeypatch.setattr(engine, "_rewrite_tokens", rtoks)
+    monkeypatch.setattr(engine, "_grow_from_miss", fake_grow)
+    monkeypatch.setattr(engine, "run_check", rc)
+
+    events = await collect(eval_stream("c1"))
+    score = next(e for e in events if e["event"] == "score")["data"]
+    assert score["passed"] is False
+    assert score["before"] == 2          # seed check alone: both "ok" items green
+    assert score["after"] == 1           # conjunction with minted: sneaky now caught
+    mint = score["mint"]
+    assert mint["gated"] is True and mint["id"] == minted.id
+    assert mint["property"] == minted.property
+    assert mint["caught_siblings"] == 2 and mint["n_known_good"] == 2
+    # grow was seeded with the clicked output + the rewritten check
+    assert calls["output"] is target and calls["check"].property == "rewritten"
+    # the report is cached for the lineage route (one mint per click, reused)
+    cached = engine.last_grow_report("c1")
+    assert cached is not None and cached.minted is minted
+
+
+async def test_green_recheck_leaves_grow_report_cache_empty(monkeypatch):
+    _install_eval_stream(monkeypatch, passed=True)
+    await collect(eval_stream("c-green"))
+    assert engine.last_grow_report("c-green") is None
+
+
+async def test_eval_stream_green_recheck_never_calls_grow(monkeypatch):
+    called = []
+
+    async def fake_grow(output, check):
+        called.append(1)
+        from loop.grower import GrowReport
+        return GrowReport()
+
+    _install_eval_stream(monkeypatch, passed=True)
+    monkeypatch.setattr(engine, "_grow_from_miss", fake_grow)
+    events = await collect(eval_stream("c1"))
+    assert called == []
+    assert next(e for e in events if e["event"] == "score")["data"]["mint"] is None
+
+
+async def test_eval_stream_mint_seam_error_degrades_honestly(monkeypatch):
+    """Atlas down must not kill the stream — the score still lands, the after-count
+    falls back to the rewritten check alone, and the error is REPORTED in mint."""
+    from loop.grower import GrowReport
+
+    async def fake_grow(output, check):
+        return GrowReport(error="MONGODB_URI is empty")
+
+    _install_eval_stream(monkeypatch, passed=False, pool_green=3, n=4)
+    monkeypatch.setattr(engine, "_grow_from_miss", fake_grow)
+    events = await collect(eval_stream("c1"))
+    names = [e["event"] for e in events]
+    assert names[-1] == "done" and "error" not in names
+    score = next(e for e in events if e["event"] == "score")["data"]
+    assert score["after"] == 3           # rewritten check alone
+    assert score["mint"]["error"] == "MONGODB_URI is empty"
+    assert score["mint"]["gated"] is False
+
+
+async def test_grow_from_miss_seeds_cluster_with_clicked_claim(real_grow_seam, monkeypatch):
+    """_grow_from_miss must cluster around the claim that just slipped through
+    (negative_example ← output.claim) and degrade to an error report when the
+    store seam is unreachable."""
+    from loop import grower
+
+    seen = {}
+
+    async def fake_report(worst_check, db):
+        seen["check"] = worst_check
+        return grower.GrowReport(gated=False)
+
+    monkeypatch.setattr(engine.store, "get_db", lambda: object())
+    monkeypatch.setattr(engine, "grow_report", fake_report)
+    rep = await engine._grow_from_miss(out("Revenue was 4.2B"), a_check("P"))
+    assert seen["check"].negative_example == "Revenue was 4.2B"
+    assert rep.error is None
+
+    def boom():
+        raise RuntimeError("MONGODB_URI is empty")
+
+    monkeypatch.setattr(engine.store, "get_db", boom)
+    rep = await engine._grow_from_miss(out("x"), a_check("P"))
+    assert rep.error is not None and "MONGODB_URI" in rep.error
 
 
 async def test_eval_stream_emits_error_then_done_on_failure(monkeypatch):

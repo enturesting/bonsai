@@ -2,6 +2,8 @@
 
 > **AI Engineer World's Fair Hackathon 2026.** Paste-ready text for the submission form. Placeholders marked `‹…›` — fill before submitting.
 
+> **Errata (2026-07-02, post-submission).** This document is preserved as submitted. Two claims below were aspirational at submission time and are accurate only as of this date: (1) the honesty-gate test (`eval/tests/test_honesty_gate.py`) was **not** in the default pytest run and no CI existed, so "fails the build" described intent, not wiring — it is now in `pytest.ini` testpaths and run by `.github/workflows/ci.yml`, and was verified to fail on an injected `eval/gold` reference. (2) The gate is a source-scanning lint (word-boundary regex over `/loop`), not a sandbox — it blocks naive static references, not dynamic ones. Also, at demo time the on-stage "Improve" click rewrote a seed check in memory rather than minting a new gated check (the full mint path ran in the lineage route and tests).
+
 ---
 
 ## Project name

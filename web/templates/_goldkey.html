@@ -1,0 +1,73 @@
+{# Answer-key manager — the OWNER extends the held-out human reference from /web.
+   Rail nuance (CONTRACTS §3 /eval): only /loop is barred from gold — the CI lint
+   bars the whole eval/gold/ directory, not a filename list, so owner-added items
+   are held out from the loop exactly like the frozen ones. Honesty discipline:
+   the ✓ card renders only after the write was read back intact (copy-verify);
+   provenance is explicit — owner-added is never dressed up as frozen, and the
+   stored receipt keeps meaning the frozen set it was computed on. #}
+<section class="panel goldkey-panel" id="goldkey-panel">
+  <h2>Answer key <span class="hint">your labels &mdash; held out from the loop</span></h2>
+  <p class="goldkey-intro">The {{ n_frozen_gold }} frozen item{{ '' if n_frozen_gold == 1 else 's' }} were authored offline and stay read-only here. Examples you add are stored as <strong>owner-added</strong> gold &mdash; same schema, same rail (the loop is barred from the whole directory), separate provenance: the stored honesty receipt still describes the frozen set it was computed on.</p>
+
+  {% if gold_add_error %}
+  <div class="goldkey-card goldkey-card--failed">
+    <div class="goldkey-verdict">&#10005; not added &mdash; {{ gold_add_error }}</div>
+    <div class="goldkey-meta">nothing was kept: an item only counts once it&rsquo;s written AND read back intact (copy-verify)</div>
+  </div>
+  {% elif gold_added %}
+  <div class="goldkey-card goldkey-card--added">
+    <div class="goldkey-verdict">&#10003; added &mdash; written and read back intact</div>
+    <div class="goldkey-prop"><code>{{ gold_added.gold_id }}</code> &middot; labeled <strong>{{ gold_added.expected_verdict }}</strong></div>
+    <div class="goldkey-meta">owner-added, not frozen &mdash; it joins the held-out set the next live rescore (a keyed box&rsquo;s Verify&nbsp;now) is scored on, and that receipt will say so; the stored receipt still describes the frozen set only</div>
+  </div>
+  {% endif %}
+
+  <details class="teach goldkey">
+    <summary>+ Add a labeled example</summary>
+    <form hx-post="/gold/add" hx-target="#goldkey-panel" hx-swap="outerHTML">
+      <textarea name="question" rows="2" maxlength="600" required
+                placeholder="The prospect&rsquo;s question &mdash; e.g. &ldquo;How often are access reviews performed?&rdquo;"></textarea>
+      <textarea name="claim" rows="2" maxlength="600" required
+                placeholder="The answer you are labeling &mdash; e.g. &ldquo;Access reviews are performed quarterly.&rdquo;"></textarea>
+      <textarea name="supporting_quote" rows="2" maxlength="2000"
+                placeholder="Verbatim quote from the policy doc (S1) this rests on (optional)&hellip;"></textarea>
+      <div class="goldkey-row">
+        <select name="expected_verdict" aria-label="your pass/fail label">
+          <option value="pass">label: pass &mdash; Verity may say this</option>
+          <option value="fail">label: fail &mdash; the harness should catch it</option>
+        </select>
+        <select name="claim_type" aria-label="what kind of claim this is">
+          <option value="judgment">judgment claim</option>
+          <option value="numeric">numeric claim</option>
+          <option value="quote">quoted clause</option>
+        </select>
+        <select name="category" aria-label="failure family this example exercises">
+          <option value="clean">Clean &mdash; well-supported</option>
+          <option value="unsupported-numeric">Invented number / wrong figure</option>
+          <option value="fabricated-quote">Made-up quote or clause</option>
+          <option value="stale-wrong-citation">Stale or wrong citation</option>
+          <option value="vague-not-checkable">Too vague to check</option>
+          <option value="single-source-overcite">Over-cited source</option>
+        </select>
+      </div>
+      <div class="teach-row">
+        <span class="teach-hint">a human label stored beside the frozen set &mdash; the loop is barred from both by the same CI lint</span>
+        <button type="submit" class="btn btn--improve">Add to the key &rarr;</button>
+      </div>
+    </form>
+  </details>
+
+  <ul class="goldkey-list">
+    {% for item in owner_gold %}
+    <li class="goldkey-item">
+      <span class="prov prov--owner" title="added by the domain owner from this page — not part of the frozen set">&#9670; owner-added</span>
+      <code>{{ item.gold_id }}</code> &middot; labeled {{ item.expected_verdict }}
+      <div class="goldkey-item-q">{{ item.question }}</div>
+    </li>
+    {% endfor %}
+    <li class="goldkey-item goldkey-item--frozen">
+      <span class="prov prov--frozen" title="authored offline before the loop ever ran; never edited in place">&#10052; frozen</span>
+      {{ n_frozen_gold }} item{{ '' if n_frozen_gold == 1 else 's' }} &mdash; authored offline, read-only here
+    </li>
+  </ul>
+</section>

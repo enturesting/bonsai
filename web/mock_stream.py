@@ -105,6 +105,26 @@ def _pill(claim_id: str, color: str, label: str) -> dict:
     return {"event": "pill", "data": {"color": color, "check_id": claim_id, "label": label}}
 
 
+def _mock_mint(category: str, questions: list) -> dict:
+    """The scripted mint story for a confirmed failure — mirrors the additive
+    `mint` field the real eval_stream emits (CONTRACTS §2, 2026-07-02) and
+    mock_cluster_lineage's cluster (every pool failure). The REAL is_general rule
+    is applied to that scripted cluster, so a one-failure pool honestly reports
+    gated=False instead of pretending generality."""
+    siblings = sum(1 for x in questions if x.get("category") not in ("", "clean"))
+    return {
+        "attempted": True,
+        "gated": siblings >= 2,  # is_general: ≥2 siblings caught (all known-good pass offline)
+        "id": f"minted-{category or 'general'}",
+        "property": rung(category, 2),
+        "cluster_size": siblings,
+        "caught_siblings": siblings,
+        "n_known_good": sum(1 for x in questions if x.get("category") == "clean"),
+        "error": None,
+        "source": "mock",  # scripted — the UI labels it so it never reads as a real mint
+    }
+
+
 async def mock_eval_stream(claim_id: str):
     delay = _delay()
     try:
@@ -123,7 +143,8 @@ async def mock_eval_stream(claim_id: str):
 
         if delay:
             await asyncio.sleep(delay)
-        yield _pill(claim_id, "green" if passed else "red", "GREEN" if passed else "RED")
+        # The pill judges the ANSWER (supported or caught) — mirrors loop.engine.
+        yield _pill(claim_id, "green" if passed else "red", "SUPPORTED" if passed else "CAUGHT")
 
         # Honest counts: greens among the working pool. A corrected false-positive
         # (clean claim) lifts the count by one; a confirmed failure leaves it flat.
@@ -135,7 +156,8 @@ async def mock_eval_stream(claim_id: str):
         lo, hi = wilson(after, n)
         yield {
             "event": "score",
-            "data": {"passed": passed, "before": before, "after": after, "n": n, "ci": [lo, hi]},
+            "data": {"passed": passed, "before": before, "after": after, "n": n, "ci": [lo, hi],
+                     "mint": None if passed else _mock_mint(category, questions)},
         }
         yield {"event": "done", "data": {}}
     except Exception as exc:  # mirror eval_stream: red pill + error THEN done, so the SSE closes

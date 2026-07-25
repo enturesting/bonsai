@@ -211,30 +211,45 @@ async def real_cluster_lineage(claim_id: str) -> dict:
         # fall back to the offline cluster so clicking a branch is never empty
         # during a live run. Labeled source="mock" (honest about the data).
         return await mock_cluster_lineage(claim_id)
-    minted_check = await loop.grow(_seed_check(q, seed_text), db)
 
     cluster = [
         {"rank": i, "id": f.id, "why": f.why or "failure", "similarity": sim}
         for i, (f, sim) in enumerate(scored, start=1)
     ]
-    is_general = minted_check is not None
-    minted = {
-        "id": minted_check.id if minted_check else _minted_id(q),
-        "property": minted_check.property if minted_check else _property_for(q),
-    }
+    report = loop.last_grow_report(claim_id)
+    if report is not None and report.candidate is not None:
+        # This claim's improve already ran the real grow path INSIDE eval_stream
+        # (2026-07-02 wiring) — show the mint that actually happened, and never
+        # mint (or persist) a second check just to draw the panel.
+        minted = {"id": report.candidate.id, "property": report.candidate.property}
+        verdict = {
+            "is_general": report.gated,
+            "passed_known_good": report.gated,
+            "caught_siblings": report.caught_siblings,
+            "n_known_good": report.n_known_good,
+        }
+    else:
+        # No improve has grown this claim yet (a direct branch click) — run grow.
+        minted_check = await loop.grow(_seed_check(q, seed_text), db)
+        is_general = minted_check is not None
+        minted = {
+            "id": minted_check.id if minted_check else _minted_id(q),
+            "property": minted_check.property if minted_check else _property_for(q),
+        }
+        # grow() already ran the is_general gate; a returned Check means it passed.
+        verdict = {
+            "is_general": is_general,
+            "passed_known_good": is_general,
+            "caught_siblings": len(cluster),
+            "n_known_good": None,
+        }
     return {
         "claim_id": claim_id,
         "seed": {"id": _seed_id(q.get("id", claim_id)), "claim": seed_text, "why": _why(q)},
         "cluster": cluster,
         "k": len(cluster),
         "minted": minted,
-        # grow() already ran the is_general gate; a returned Check means it passed.
-        "verdict": {
-            "is_general": is_general,
-            "passed_known_good": is_general,
-            "caught_siblings": len(cluster),
-            "n_known_good": None,
-        },
+        "verdict": verdict,
         "forward": _forward_for(q),
         "source": "atlas",
     }

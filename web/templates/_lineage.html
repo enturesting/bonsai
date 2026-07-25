@@ -12,10 +12,15 @@
 <div class="lineage lineage--{{ lineage.source }}">
   <div class="lineage-head">
     <span class="lineage-title">Cluster lineage</span>
-    <span class="lineage-src">{{ "live Atlas" if lineage.source == "atlas" else "offline mock" }}</span>
+    <span class="lineage-src">{{ "live Atlas" if lineage.source == "atlas" else "re-enactment · offline mock" }}</span>
   </div>
 
+  {% if lineage.source == "atlas" %}
   <p class="lineage-summary"><strong>What just happened:</strong> Bonsai caught this failure, used Atlas vector search to pull its <em>{{ lineage.k }} nearest past failures</em>, and minted <strong>one</strong> general check for that kind of mistake &mdash; then verified it still passes every good answer.</p>
+  {% else %}
+  {# mock box: this panel is a scripted reconstruction from authored fixtures — nothing was recorded, and it must never read as a live mint #}
+  <p class="lineage-summary"><strong>What you&rsquo;re watching (a re-enactment):</strong> a scripted reconstruction from authored fixtures, not a live mint &mdash; the cluster of <em>{{ lineage.k }} past failures</em> below and its similarity scores are staged from the offline fixture pool, not pulled by a vector search. On a wired box this runs for real: Bonsai catches the failure, pulls its nearest past failures with Atlas vector search, mints <strong>one</strong> general check for that kind of mistake, and verifies it still passes every good answer.</p>
+  {% endif %}
   {% if lineage.forward %}<p class="lineage-forward"><span class="forward-tag">What it means next</span> {{ lineage.forward }}</p>{% endif %}
 
   {# 1 — the seed failure the grower started from #}

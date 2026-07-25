@@ -43,11 +43,14 @@ def test_stream_emits_the_section2_lifecycle(client):
 def test_stream_clean_claim_flips_to_green(client):
     body = client.get("/stream/improve/clean-numeric-01").text
     assert "pill--green" in body
-    assert ">GREEN<" in body
+    assert ">SUPPORTED<" in body
 
 
 def test_stream_failure_claim_resolves_red(client):
+    import html
+
     body = client.get("/stream/improve/numeric-mismatch-01").text
-    # final pill is red; the score event reports passed:false
+    # final pill is red; the score event reports passed:false. The score JSON
+    # rides the wire entity-escaped (innerHTML swap) — unescape like textContent.
     assert "pill--red" in body
-    assert '"passed": false' in body
+    assert '"passed": false' in html.unescape(body)

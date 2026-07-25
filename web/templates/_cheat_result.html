@@ -1,0 +1,12 @@
+{# Snippet lint verdict — `hits` is the REAL eval.honesty.lint_source outcome
+   over the snippet shown below, never staged. #}
+<div class="cheat-card {% if hits %}cheat-card--caught{% else %}cheat-card--clean{% endif %}">
+  <div class="cheat-card-verdict">{% if hits %}&#10005; CAUGHT &mdash; this snippet would fail the CI build{% else %}&#10003; no forbidden reference &mdash; this snippet passes the lint{% endif %}</div>
+  <pre class="cheat-snippet"><code>{{ snippet }}</code></pre>
+  {% if hits %}
+  <div class="cheat-card-meta">matched forbidden pattern{{ '' if hits|length == 1 else 's' }}: {% for h in hits %}<code>{{ h }}</code>{% if not loop.last %} &middot; {% endif %}{% endfor %}</div>
+  {% else %}
+  <div class="cheat-card-meta">the lint looks for gold/eval references only &mdash; a snippet can pass it and still be wrong in other ways.</div>
+  {% endif %}
+  <div class="cheat-card-note">example snippet linted as text by the same <code>eval.honesty</code> checker CI runs &mdash; the repo&rsquo;s <code>loop/</code> source was not modified.</div>
+</div>
